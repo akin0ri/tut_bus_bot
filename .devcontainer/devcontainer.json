@@ -1,0 +1,19 @@
+{
+  "name": "Python Development",
+  "dockerComposeFile": "docker-compose.yml",
+  "workspaceFolder": "/workspace",
+  "remoteUser": "vscode",
+  "service": "python3",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-toolsai.jupyter"
+      ]
+    },
+    "postCreateCommand": "pip install -r requirements.txt"
+  }
+}

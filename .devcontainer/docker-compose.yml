@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  # sync devcontainer.json 'service'
+  python3:
+    # original container naame
+    container_name: python3.10-development
+    build:
+      context: .
+      dockerfile: Dockerfile
+    tty: true
+    # working dir
+    working_dir: /workspace
+    # setting volume (host:container)
+    volumes:
+      - ..:/workspace
