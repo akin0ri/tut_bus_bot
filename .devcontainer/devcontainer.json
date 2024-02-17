@@ -11,7 +11,12 @@
       },
       "extensions": [
         "ms-python.python",
-        "ms-toolsai.jupyter"
+        "ms-python.vscode-pylance",
+        "ms-toolsai.jupyter",
+        "ms-azuretools.vscode-docker",
+        "mhutchie.git-graph",
+        "codezombiech.gitignore",
+        "eamodio.gitlens"
       ]
     },
     "postCreateCommand": "pip install -r requirements.txt"
