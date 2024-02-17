@@ -16,7 +16,9 @@
         "ms-azuretools.vscode-docker",
         "mhutchie.git-graph",
         "codezombiech.gitignore",
-        "eamodio.gitlens"
+        "eamodio.gitlens",
+        "GitHub.copilot",
+        "GitHub.copilot-chat"
       ]
     },
     "postCreateCommand": "pip install -r requirements.txt"
