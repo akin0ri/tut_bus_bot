@@ -16,8 +16,7 @@
         "ms-azuretools.vscode-docker",
         "mhutchie.git-graph",
         "codezombiech.gitignore",
-        "eamodio.gitlens",
-        "ms-toolsai.jupyter"
+        "eamodio.gitlens"
       ]
     },
     "postCreateCommand": "pip install -r requirements.txt"
