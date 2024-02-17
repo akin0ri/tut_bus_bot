@@ -39,7 +39,7 @@ RUN chmod a+x git*.*
 RUN ls -l $PWD/git*.* | awk '{print "source "$9}' >> /home/${USERNAME}/.bashrc
 
 RUN echo "GIT_PS1_SHOWUNTRACKEDFILES=true" >> /home/${USERNAME}/.bashrc
-RUN echo 'export PS1="\[\033[01;32m\]\u@\h\[\033[01;33m\] \w\[\033[01;31m\]\$(__git_ps1 \"(%s)\") \[\033[01;34m\] \\$ \[\033[00m\]"' >> /home/${USERNAME}/.bashrc
+RUN echo 'export PS1="\[\033[01;32m\]\u@\h\[\033[01;33m\] \w \[\033[01;31m\]\$(__git_ps1 \"(%s)\") \\n\[\033[01;34m\]\\$ \[\033[00m\]"' >> /home/${USERNAME}/.bashrc
 
 # Set the working directory in the container
 WORKDIR /workspace
