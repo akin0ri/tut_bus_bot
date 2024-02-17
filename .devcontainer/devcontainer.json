@@ -11,6 +11,12 @@
       },
       "extensions": [
         "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-toolsai.jupyter",
+        "ms-azuretools.vscode-docker",
+        "mhutchie.git-graph",
+        "codezombiech.gitignore",
+        "eamodio.gitlens",
         "ms-toolsai.jupyter"
       ]
     },
