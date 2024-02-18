@@ -18,7 +18,9 @@
         "codezombiech.gitignore",
         "eamodio.gitlens",
         "GitHub.copilot",
-        "GitHub.copilot-chat"
+        "GitHub.copilot-chat",
+        "mechatroner.rainbow-csv",
+        "mosapride.zenkaku"
       ]
     },
     "postCreateCommand": "pip install -r requirements.txt"
