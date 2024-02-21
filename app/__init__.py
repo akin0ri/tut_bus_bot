@@ -7,6 +7,8 @@ from linebot.v3.exceptions import InvalidSignatureError
 from linebot.v3.messaging import Configuration, ApiClient, MessagingApi, ReplyMessageRequest, TextMessage
 from linebot.v3.webhooks import MessageEvent, TextMessageContent
 
+from bus_time import get_last_5_bus_times
+
 app = Flask(__name__)
 load_dotenv(".env", verbose=True)
 
@@ -33,7 +35,8 @@ def callback():
         handler.handle(body, signature)
     except InvalidSignatureError:
         abort(400)
-    except:
+    except Exception as e:
+        print(e)
         abort(500)
 
     return 'OK'
@@ -41,12 +44,18 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessageContent)
 def handle_message(event):
-    with ApiClient(Configuration) as api_client:
+    with ApiClient(Configuration(verify_ssl=False)) as api_client:
+        text_data = event.message.text
+
+        source, direction = text_data.split("_")
+        print(source, direction)
+        but_times = get_last_5_bus_times(source, int(direction))
+
         line_bot_api = MessagingApi(api_client)
         line_bot_api.reply_message_with_http_info(
             ReplyMessageRequest(
                 reply_token=event.reply_token,
-                messages=[TextMessage(text=event.message.text)]
+                messages=[TextMessage(text=but_times)]
             )
         )
 
