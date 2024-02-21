@@ -83,29 +83,32 @@ def get_dormitory_bus_times(isWeekdays, now_date, direction):
 
 # bus_type: "hachioji" or "minamino" or "dormitory"
 # direction: "up":1 or "down":0
-def get_last_5_bus_times(bus_type : str, direction : str):
+def get_last_5_bus_times(bus_type : str, direction : int):
     now_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
     isWeekdays = now_date.weekday() < 5
 
     if bus_type == "hachioji":
-        return get_hachioji_bus_times(isWeekdays, now_date, 1 if direction == "up" else 0)
+        return get_hachioji_bus_times(isWeekdays, now_date, direction)
     elif bus_type == "minamino":
-        return get_minamino_bus_times(isWeekdays, now_date, 1 if direction == "up" else 0)
+        return get_minamino_bus_times(isWeekdays, now_date, direction)
     elif bus_type == "dormitory":
-        return get_dormitory_bus_times(isWeekdays, now_date, 1 if direction == "up" else 0)
+        return get_dormitory_bus_times(isWeekdays, now_date, direction)
     else:
         raise Exception("Invalid bus type")
+
 
 # For debugging purposes
 if __name__ == "__main__":
     now_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
     isWeekdays = now_date.weekday() < 5
 
-    print(f"hachi->shcool : {get_hachioji_bus_times(isWeekdays, now_date, 1)}")
-    print(f"shcool->hachi : {get_hachioji_bus_times(isWeekdays, now_date, 0)}")
+    # print(f"hachi->shcool : {get_hachioji_bus_times(isWeekdays, now_date, 1)}")
+    # print(f"shcool->hachi : {get_hachioji_bus_times(isWeekdays, now_date, 0)}")
 
-    print(f"minamino->shcool : {get_minamino_bus_times(isWeekdays, now_date, 1)}")
-    print(f"shcool->minamino : {get_minamino_bus_times(isWeekdays, now_date, 0)}")
+    # print(f"minamino->shcool : {get_minamino_bus_times(isWeekdays, now_date, 1)}")
+    # print(f"shcool->minamino : {get_minamino_bus_times(isWeekdays, now_date, 0)}")
 
-    print(f"dormitory->shcool : {get_dormitory_bus_times(isWeekdays, now_date, 1)}")
-    print(f"shcool->dormitory : {get_dormitory_bus_times(isWeekdays, now_date, 0)}")
+    # print(f"dormitory->shcool : {get_dormitory_bus_times(isWeekdays, now_date, 1)}")
+    # print(f"shcool->dormitory : {get_dormitory_bus_times(isWeekdays, now_date, 0)}")
+
+    print(get_last_5_bus_times("hachioji", 0))
