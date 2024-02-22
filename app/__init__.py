@@ -38,24 +38,18 @@ def callback():
     except Exception as e:
         print(e)
         abort(500)
-
     return 'OK'
 
 
-@handler.add(MessageEvent, message=TextMessageContent)
+@handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    with ApiClient(Configuration(verify_ssl=False)) as api_client:
-        text_data = event.message.text
-
-        source, direction = text_data.split("_")
-        print(source, direction)
-        but_times = get_last_5_bus_times(source, int(direction))
-
+    with ApiClient(Configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
+        user_message = event.message.text
         line_bot_api.reply_message_with_http_info(
             ReplyMessageRequest(
                 reply_token=event.reply_token,
-                messages=[TextMessage(text=but_times)]
+                messages=[TextMessage(text=user_message)]
             )
         )
 
