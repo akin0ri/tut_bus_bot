@@ -18,7 +18,7 @@ if not (access_token := environ.get("LINE_CHANNEL_ACCESS_TOKEN")):
 if not (channel_secret := environ.get("LINE_CHANNEL_SECRET")):
     raise Exception("channel secret is not set as an environment variable")
 
-line_bot_api = Configuration(access_token)
+configuration = Configuration(access_token=access_token)
 handler = WebhookHandler(channel_secret)
 
 @app.route("/callback", methods=['POST'])
@@ -41,15 +41,15 @@ def callback():
     return 'OK'
 
 
-@handler.add(MessageEvent, message=TextMessage)
+@handler.add(MessageEvent, message=TextMessageContent)
 def handle_message(event):
-    with ApiClient(Configuration) as api_client:
+    with ApiClient(configuration) as api_client:
+        print(event.message.text)
         line_bot_api = MessagingApi(api_client)
-        user_message = event.message.text
         line_bot_api.reply_message_with_http_info(
             ReplyMessageRequest(
                 reply_token=event.reply_token,
-                messages=[TextMessage(text=user_message)]
+                messages=[TextMessage(text=event.message.text)]
             )
         )
 
