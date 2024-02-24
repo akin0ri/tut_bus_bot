@@ -18,7 +18,7 @@ def get_hachioji_bus_times(isWeekdays, now_date, direction):
                         break
 
     else:
-        with open("/workspace/latest_time_table/hachioji_saturday.csv", "r") as f:
+        with open("/workspace/latest_time_table/hachioji_holiday.csv", "r") as f:
             reader = csv.reader(f)
             for row in reader:
                 hour, minute = row[direction].split(":")
@@ -48,7 +48,7 @@ def get_minamino_bus_times(isWeekdays, now_date, direction):
                         break
 
     else:
-        with open("/workspace/latest_time_table/minamino_saturday.csv", "r") as f:
+        with open("/workspace/latest_time_table/minamino_holiday.csv", "r") as f:
             reader = csv.reader(f)
             for row in reader:
                 hour, minute = row[direction].split(":")
@@ -76,10 +76,23 @@ def get_dormitory_bus_times(isWeekdays, now_date, direction):
                     next_bus_times.append(row[direction])
                     if len(next_bus_times) > 5:
                         break
-    else:
-        raise Exception("Dormitory bus does not run on weekends")
 
     return next_bus_times
+
+def format_timetable(timetable, bus_type, direction):
+    text = "【バス運行情報】\n\n"
+
+    if len(timetable) == 0:
+        text += "本日のバス運行は終了しました。\n"
+    elif timetable[0] == "error":
+        text += "エラーが発生しました。時間をおいて再度お試しください。"
+    else:
+        for i, time in enumerate(timetable, 1):
+            text += f"{time}\n"
+
+    text += "\n※時刻は目安です。遅れる場合があります。"
+
+    return text
 
 # bus_type: "hachioji" or "minamino" or "dormitory"
 # direction: "up":1 or "down":0
@@ -88,13 +101,15 @@ def get_last_5_bus_times(bus_type : str, direction : int):
     isWeekdays = now_date.weekday() < 5
 
     if bus_type == "hachioji":
-        return get_hachioji_bus_times(isWeekdays, now_date, direction)
+        timetable = get_hachioji_bus_times(isWeekdays, now_date, direction)
     elif bus_type == "minamino":
-        return get_minamino_bus_times(isWeekdays, now_date, direction)
+        timetable = get_minamino_bus_times(isWeekdays, now_date, direction)
     elif bus_type == "dormitory":
-        return get_dormitory_bus_times(isWeekdays, now_date, direction)
+        timetable = get_dormitory_bus_times(isWeekdays, now_date, direction)
     else:
-        raise Exception("Invalid bus type")
+        timetable = ["error"]
+
+    return format_timetable(timetable, bus_type, direction)
 
 
 # For debugging purposes
