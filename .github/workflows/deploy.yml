@@ -25,4 +25,4 @@ jobs:
         script: |
           cd ${{ secrets.SERVER_DEPLOY_DIR }}
           git pull
-          docker compose up -d
+          docker compose up -d --build
