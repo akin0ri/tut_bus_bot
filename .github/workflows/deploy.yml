@@ -24,7 +24,5 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
           cd ${{ secrets.SERVER_DEPLOY_DIR }}
-          apt-get update
-          apt-get install -y git
           git pull
           docker compose up -d --build
