@@ -9,7 +9,6 @@ jobs:
     name: Deploy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
       - name: install SSH key
         uses: akin0ri/ssh-key-action@v2
         with:
