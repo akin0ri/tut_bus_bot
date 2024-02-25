@@ -5,7 +5,7 @@ def get_hachioji_bus_times(isWeekdays, now_date, direction):
     next_bus_times = []
 
     if isWeekdays:
-        with open("/workspace/latest_time_table/hachioji_weekdays.csv", "r") as f:
+        with open("/workspace/app/latest_time_table/hachioji_weekdays.csv", "r") as f:
             reader = csv.reader(f)
 
             for row in reader:
@@ -18,7 +18,7 @@ def get_hachioji_bus_times(isWeekdays, now_date, direction):
                         break
 
     else:
-        with open("/workspace/latest_time_table/hachioji_holiday.csv", "r") as f:
+        with open("/workspace/app/latest_time_table/hachioji_holiday.csv", "r") as f:
             reader = csv.reader(f)
             for row in reader:
                 hour, minute = row[direction].split(":")
@@ -35,7 +35,7 @@ def get_minamino_bus_times(isWeekdays, now_date, direction):
     next_bus_times = []
 
     if isWeekdays:
-        with open("/workspace/latest_time_table/minamino_weekdays.csv", "r") as f:
+        with open("/workspace/app/latest_time_table/minamino_weekdays.csv", "r") as f:
             reader = csv.reader(f)
 
             for row in reader:
@@ -48,7 +48,7 @@ def get_minamino_bus_times(isWeekdays, now_date, direction):
                         break
 
     else:
-        with open("/workspace/latest_time_table/minamino_holiday.csv", "r") as f:
+        with open("/workspace/app/latest_time_table/minamino_holiday.csv", "r") as f:
             reader = csv.reader(f)
             for row in reader:
                 hour, minute = row[direction].split(":")
@@ -65,7 +65,7 @@ def get_dormitory_bus_times(isWeekdays, now_date, direction):
     next_bus_times = []
 
     if isWeekdays:
-        with open("/workspace/latest_time_table/dormitory_weekdays.csv", "r") as f:
+        with open("/workspace/app/latest_time_table/dormitory_weekdays.csv", "r") as f:
             reader = csv.reader(f)
 
             for row in reader:
