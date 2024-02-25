@@ -2,7 +2,7 @@ name: CD
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   deploy:
@@ -13,10 +13,10 @@ jobs:
       - name: install SSH key
         uses: akin0ri/ssh-key-action@v2
         with:
-          key: ${{ secrets.SSH_KEY }}
-          name: id_rsa
-          known_hosts: ${{ secrets.KNOWN_HOSTS }}
-      - name: deploy
-        run: |
-          cd ${{ secrets.SERVER_DEPLOY_DIR }}
-          git pull origin main
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{ secrets.SERVER_DEPLOY_DIR }}
+            git pull origin masetr
