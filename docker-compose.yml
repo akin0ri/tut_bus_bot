@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  python3:
+    build: .
+    ports:
+      - "9090:9090"
+    restart: always
+    container_name: bus_bot
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+    command: flask run --host=0.0.0.0 --port=9090 --debugger --reload
+    # if you don't set tty true, the container will exit
+    tty: true

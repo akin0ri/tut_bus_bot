@@ -7,7 +7,7 @@ from linebot.v3.exceptions import InvalidSignatureError
 from linebot.v3.messaging import Configuration, ApiClient, MessagingApi, ReplyMessageRequest, TextMessage
 from linebot.v3.webhooks import MessageEvent, TextMessageContent
 
-from bus_time import get_last_5_bus_times
+from app.bus_time import get_last_5_bus_times
 
 app = Flask(__name__)
 load_dotenv(".env", verbose=True)
