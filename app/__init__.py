@@ -1,3 +1,4 @@
+import os
 from os import environ
 from dotenv import load_dotenv
 from flask import Flask, request, abort
@@ -10,13 +11,18 @@ from linebot.v3.webhooks import MessageEvent, TextMessageContent
 from app.bus_time import get_last_5_bus_times
 
 app = Flask(__name__)
+
 load_dotenv(".env", verbose=True)
 
-# set LINE channel secret and access token
-if not (access_token := environ.get("LINE_CHANNEL_ACCESS_TOKEN")):
-    raise Exception("access token is not set as an environment variable")
-if not (channel_secret := environ.get("LINE_CHANNEL_SECRET")):
-    raise Exception("channel secret is not set as an environment variable")
+try:
+    # set LINE channel secret and access token
+    if not (access_token := environ.get("LINE_CHANNEL_ACCESS_TOKEN")):
+        raise Exception("access token is not set as an environment variable")
+    if not (channel_secret := environ.get("LINE_CHANNEL_SECRET")):
+        raise Exception("channel secret is not set as an environment variable")
+except:
+    access_token = os.environ.get("LINE_CHANNEL_ACCESS_TOKEN")
+    channel_secret = os.environ.get("LINE_CHANNEL_SECRET")
 
 configuration = Configuration(access_token=access_token)
 handler = WebhookHandler(channel_secret)
