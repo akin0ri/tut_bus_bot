@@ -17,7 +17,7 @@ jobs:
       uses: appleboy/ssh-action@master
       with:
         ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-        host: ${{ secrets.SERVER_IP }}
+        host: ${{ secrets.SERVER_HOST }}
         username: ${{ secrets.SERVER_USERNAME }}
         script: |
           echo 'LINE_CHANNEL_ACCESS_TOKEN=${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}' > .env;
