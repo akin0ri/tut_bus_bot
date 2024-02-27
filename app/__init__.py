@@ -14,15 +14,11 @@ app = Flask(__name__)
 
 load_dotenv(".env", verbose=True)
 
-try:
-    # set LINE channel secret and access token
-    if not (access_token := environ.get("LINE_CHANNEL_ACCESS_TOKEN")):
-        raise Exception("access token is not set as an environment variable")
-    if not (channel_secret := environ.get("LINE_CHANNEL_SECRET")):
-        raise Exception("channel secret is not set as an environment variable")
-except:
-    access_token = os.environ.get("LINE_CHANNEL_ACCESS_TOKEN")
-    channel_secret = os.environ.get("LINE_CHANNEL_SECRET")
+# set LINE channel secret and access token
+if not (access_token := environ.get("LINE_CHANNEL_ACCESS_TOKEN")):
+    raise Exception("access token is not set as an environment variable")
+if not (channel_secret := environ.get("LINE_CHANNEL_SECRET")):
+    raise Exception("channel secret is not set as an environment variable")
 
 configuration = Configuration(access_token=access_token)
 handler = WebhookHandler(channel_secret)
