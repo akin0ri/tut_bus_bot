@@ -79,8 +79,25 @@ def get_dormitory_bus_times(isWeekdays, now_date, direction):
 
     return next_bus_times
 
-def format_timetable(timetable, bus_type, direction):
-    text = "【バス運行情報】\n\n"
+def format_timetable(timetable, now_date, bus_type, direction):
+    text = f"【バス運行情報 {now_date.hour}:{now_date.minute}:{now_date.second}】\n"
+
+    if bus_type == "hachioji":
+        if direction == 0:
+            text += "大学発 八王子駅行\n"
+        else:
+            text += "八王子駅発 大学行\n"
+    elif bus_type == "minamino":
+        if direction == 0:
+            text += "大学発 みなみ野駅行\n"
+        else:
+            text += "みなみ野駅発 大学行\n"
+    elif bus_type == "dormitory":
+        if direction == 0:
+            text += "大学発 学生寮行\n"
+        else:
+            text += "学生寮発 大学行\n"
+    text += "\n"
 
     if len(timetable) == 0:
         text += "本日のバス運行は終了しました。\n"
@@ -109,7 +126,7 @@ def get_last_5_bus_times(bus_type : str, direction : int):
     else:
         timetable = ["error"]
 
-    return format_timetable(timetable, bus_type, direction)
+    return format_timetable(timetable,now_date , bus_type, direction)
 
 
 # For debugging purposes
