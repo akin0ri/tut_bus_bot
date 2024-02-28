@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 def get_hachioji_bus_times(isWeekdays, now_date, direction):
     next_bus_times = []
+    isShuttle = False
 
     if isWeekdays:
         with open("/workspace/app/latest_time_table/hachioji_weekdays.csv", "r") as f:
@@ -13,7 +14,11 @@ def get_hachioji_bus_times(isWeekdays, now_date, direction):
                 table_time = datetime(now_date.year, now_date.month, now_date.day, int(hour), int(minute), 0, 0, tzinfo=timezone(timedelta(hours=+9), 'JST'))
 
                 if table_time > now_date:
-                    next_bus_times.append(row[direction])
+                    # set shuttle flag
+                    if row[0] == 1:
+                        isShuttle = True
+
+                    next_bus_times.append([row[direction], row[direction+1]])
                     if len(next_bus_times) > 5:
                         break
 
@@ -25,11 +30,15 @@ def get_hachioji_bus_times(isWeekdays, now_date, direction):
                 table_time = datetime(now_date.year, now_date.month, now_date.day, int(hour), int(minute), 0, 0, tzinfo=timezone(timedelta(hours=+9), 'JST'))
 
                 if table_time > now_date:
-                    next_bus_times.append(row[direction])
+                    # set shuttle flag
+                    if row[0] == 1:
+                        isShuttle = True
+
+                    next_bus_times.append([row[direction], row[direction+1]])
                     if len(next_bus_times) > 5:
                         break
 
-    return next_bus_times
+    return isShuttle, next_bus_times
 
 def get_minamino_bus_times(isWeekdays, now_date, direction):
     next_bus_times = []
@@ -43,7 +52,11 @@ def get_minamino_bus_times(isWeekdays, now_date, direction):
                 table_time = datetime(now_date.year, now_date.month, now_date.day, int(hour), int(minute), 0, 0, tzinfo=timezone(timedelta(hours=+9), 'JST'))
 
                 if table_time > now_date:
-                    next_bus_times.append(row[direction])
+                    # set shuttle flag
+                    if row[0] == 1:
+                        isShuttle = True
+
+                    next_bus_times.append([row[direction], row[direction+1]])
                     if len(next_bus_times) > 5:
                         break
 
@@ -55,11 +68,15 @@ def get_minamino_bus_times(isWeekdays, now_date, direction):
                 table_time = datetime(now_date.year, now_date.month, now_date.day, int(hour), int(minute), 0, 0, tzinfo=timezone(timedelta(hours=+9), 'JST'))
 
                 if table_time > now_date:
-                    next_bus_times.append(row[direction])
+                    # set shuttle flag
+                    if row[0] == 1:
+                        isShuttle = True
+
+                    next_bus_times.append([row[direction], row[direction+1]])
                     if len(next_bus_times) > 5:
                         break
 
-    return next_bus_times
+    return isShuttle, next_bus_times
 
 def get_dormitory_bus_times(isWeekdays, now_date, direction):
     next_bus_times = []
@@ -73,14 +90,18 @@ def get_dormitory_bus_times(isWeekdays, now_date, direction):
                 table_time = datetime(now_date.year, now_date.month, now_date.day, int(hour), int(minute), 0, 0, tzinfo=timezone(timedelta(hours=+9), 'JST'))
 
                 if table_time > now_date:
-                    next_bus_times.append(row[direction])
+                    # set shuttle flag
+                    if row[0] == 1:
+                        isShuttle = True
+
+                    next_bus_times.append([row[direction], row[direction+1]])
                     if len(next_bus_times) > 5:
                         break
 
-    return next_bus_times
+    return isShuttle, next_bus_times
 
-def format_timetable(timetable, now_date, bus_type, direction):
-    text = f"【バス運行情報 {now_date.hour}:{now_date.minute}:{now_date.second}】\n"
+def format_timetable(timetable, now_date, bus_type, direction, isShuttle):
+    text = f"【バス運行情報 {now_date.strftime('%H:%M:%S')}現在】\n"
 
     if bus_type == "hachioji":
         if direction == 1:
@@ -99,13 +120,16 @@ def format_timetable(timetable, now_date, bus_type, direction):
             text += "学生寮発 大学行\n"
     text += "\n"
 
+    if isShuttle:
+        text += "シャトル運行中!!!\n"
+
     if len(timetable) == 0:
         text += "本日のバス運行は終了しました。\n"
     elif timetable[0] == "error":
         text += "エラーが発生しました。時間をおいて再度お試しください。"
     else:
         for i, time in enumerate(timetable, 1):
-            text += f"{time}\n"
+            text += f"{time[0]} --> {time[1]}\n"
 
     text += "\n※時刻は目安です。遅れる場合があります。"
 
@@ -118,15 +142,15 @@ def get_last_5_bus_times(bus_type : str, direction : int):
     isWeekdays = now_date.weekday() < 5
 
     if bus_type == "hachioji":
-        timetable = get_hachioji_bus_times(isWeekdays, now_date, direction)
+        isShuttle, timetable = get_hachioji_bus_times(isWeekdays, now_date, direction)
     elif bus_type == "minamino":
-        timetable = get_minamino_bus_times(isWeekdays, now_date, direction)
+        isShuttle, timetable = get_minamino_bus_times(isWeekdays, now_date, direction)
     elif bus_type == "dormitory":
-        timetable = get_dormitory_bus_times(isWeekdays, now_date, direction)
+        isShuttle, timetable = get_dormitory_bus_times(isWeekdays, now_date, direction)
     else:
-        timetable = ["error"]
+        isShuttle, timetable = ["error"]
 
-    return format_timetable(timetable,now_date , bus_type, direction)
+    return format_timetable(timetable,now_date , bus_type, direction, isShuttle)
 
 
 # For debugging purposes
@@ -143,4 +167,4 @@ if __name__ == "__main__":
     # print(f"dormitory->shcool : {get_dormitory_bus_times(isWeekdays, now_date, 1)}")
     # print(f"shcool->dormitory : {get_dormitory_bus_times(isWeekdays, now_date, 0)}")
 
-    print(get_last_5_bus_times("hachioji", 0))
+    print(get_last_5_bus_times("hachioji", 1))
