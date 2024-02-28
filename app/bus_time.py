@@ -42,6 +42,7 @@ def get_hachioji_bus_times(isWeekdays, now_date, direction):
 
 def get_minamino_bus_times(isWeekdays, now_date, direction):
     next_bus_times = []
+    isShuttle = False
 
     if isWeekdays:
         with open("/workspace/app/latest_time_table/minamino_weekdays.csv", "r") as f:
@@ -80,6 +81,7 @@ def get_minamino_bus_times(isWeekdays, now_date, direction):
 
 def get_dormitory_bus_times(isWeekdays, now_date, direction):
     next_bus_times = []
+    isShuttle = False
 
     if isWeekdays:
         with open("/workspace/app/latest_time_table/dormitory_weekdays.csv", "r") as f:
