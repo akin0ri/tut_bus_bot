@@ -161,23 +161,28 @@ def format_timetable(timetable, now_date, bus_type, direction, isShuttle, shuttl
 def get_last_5_bus_times(bus_type : str, direction : int):
     now_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
     isWeekdays = now_date.weekday() < 5
+    
+    if now_date.weekday() < 6:
 
-    if bus_type == "hachioji":
-        isShuttle, timetable, shuttle_distance = get_hachioji_bus_times(isWeekdays, now_date, direction)
-    elif bus_type == "minamino":
-        isShuttle, timetable, shuttle_distance = get_minamino_bus_times(isWeekdays, now_date, direction)
-    elif bus_type == "dormitory":
-        isShuttle, timetable, shuttle_distance = get_dormitory_bus_times(isWeekdays, now_date, direction)
+        if bus_type == "hachioji":
+            isShuttle, timetable, shuttle_distance = get_hachioji_bus_times(isWeekdays, now_date, direction)
+        elif bus_type == "minamino":
+            isShuttle, timetable, shuttle_distance = get_minamino_bus_times(isWeekdays, now_date, direction)
+        elif bus_type == "dormitory":
+            isShuttle, timetable, shuttle_distance = get_dormitory_bus_times(isWeekdays, now_date, direction)
+        else:
+            isShuttle, timetable, shuttle_distance = ["error"]
+
+        return format_timetable(timetable,now_date , bus_type, direction, isShuttle, shuttle_distance)
+    
     else:
-        isShuttle, timetable, shuttle_distance = ["error"]
-
-    return format_timetable(timetable,now_date , bus_type, direction, isShuttle, shuttle_distance)
+        return "日曜日は運行していません。"
 
 
 # For debugging purposes
 if __name__ == "__main__":
-    # now_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
-    now_date = datetime(2024, 4, 8, 8, 30, 0, 0, tzinfo=timezone(timedelta(hours=+9), 'JST'))
+    now_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
+    # now_date = datetime(2024, 4, 8, 8, 30, 0, 0, tzinfo=timezone(timedelta(hours=+9), 'JST'))
     isWeekdays = now_date.weekday() < 5
     direction = 2
     bus_type = "minamino"
@@ -192,4 +197,6 @@ if __name__ == "__main__":
     # print(f"shcool->dormitory : {get_dormitory_bus_times(isWeekdays, now_date, 0)}")
     
     isShuttle, timetable, shuttle_distance = get_hachioji_bus_times(isWeekdays, now_date, direction)
-    print(format_timetable(timetable,now_date , bus_type, direction, isShuttle, shuttle_distance))
+    # print(format_timetable(timetable,now_date , bus_type, direction, isShuttle, shuttle_distance))
+    print(get_last_5_bus_times("hachioji", 1))
+    
