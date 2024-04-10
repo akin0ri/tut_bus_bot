@@ -19,7 +19,7 @@ def get_hachioji_bus_times(isWeekdays, now_date, direction):
                     # set shuttle flag
                     if before_row[0] == "1":
                         isShuttle = True
-                        shuttle_distance = [int(before_row[1][-2:]), int(before_row[2][-2:])]
+                        shuttle_distance = [before_row[1], before_row[2]]
 
                     next_bus_times.append([row[direction], row[direction+1]])
                     if len(next_bus_times) > 5:
@@ -39,7 +39,7 @@ def get_hachioji_bus_times(isWeekdays, now_date, direction):
                     # set shuttle flag
                     if before_row[0] == 1:
                         isShuttle = True
-                        shuttle_distance = [int(before_row[1][-2:]), int(before_row[2][-2:])]
+                        shuttle_distance = [before_row[1], before_row[2]]
                     
                     next_bus_times.append([row[direction], row[direction+1]])
                     if len(next_bus_times) > 5:
@@ -67,7 +67,7 @@ def get_minamino_bus_times(isWeekdays, now_date, direction):
                     # set shuttle flag
                     if before_row[0] == 1:
                         isShuttle = True
-                        shuttle_distance = [int(before_row[1][-2:]), int(before_row[2][-2:])]
+                        shuttle_distance = [before_row[1], before_row[2]]
                     
                     next_bus_times.append([row[direction], row[direction+1]])
                     if len(next_bus_times) > 5:
@@ -87,7 +87,7 @@ def get_minamino_bus_times(isWeekdays, now_date, direction):
                     # set shuttle flag
                     if before_row[0] == 1:
                         isShuttle = True
-                        shuttle_distance = [int(before_row[1][-2:]), int(before_row[2][-2:])]
+                        shuttle_distance = [before_row[1], before_row[2]]
                     
                     next_bus_times.append([row[direction], row[direction+1]])
                     if len(next_bus_times) > 5:
@@ -115,7 +115,8 @@ def get_dormitory_bus_times(isWeekdays, now_date, direction):
                     # set shuttle flag
                     if before_row[0] == 1:
                         isShuttle = True
-                        shuttle_distance = [int(before_row[1][-2:]), int(before_row[2][-2:])]
+                        shuttle_distance = [before_row[1], before_row[2]]
+
                     
                     next_bus_times.append([row[direction], row[direction+1]])
                     if len(next_bus_times) > 5:
@@ -146,8 +147,8 @@ def format_timetable(timetable, now_date, bus_type, direction, isShuttle, shuttl
     text += "\n"
 
     if isShuttle:
-        text += "現在，シャトル運行中!!!\n"
-        text += f"{shuttle_distance[0]} ~ {shuttle_distance[1]}分間隔で運行中\n\nシャトル運行後のバス予定時刻\n"
+        text += f"{shuttle_distance[0]} ~ {shuttle_distance[1]}の間はシャトル運行しています．\n\n"
+        text += "↓↓シャトル運行外の時刻表はこちら↓↓\n"
 
     if len(timetable) == 0:
         text += "本日のバス運行は終了しました。\n"
@@ -165,6 +166,7 @@ def format_timetable(timetable, now_date, bus_type, direction, isShuttle, shuttl
 # direction: "up":1 or "down":0
 def get_last_5_bus_times(bus_type : str, direction : int):
     now_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
+    now_date = datetime(2024, 4, 8, 7, 30, 0, 0, tzinfo=timezone(timedelta(hours=+9), 'JST'))
     isWeekdays = now_date.weekday() < 5
     
     if now_date.weekday() < 6:
