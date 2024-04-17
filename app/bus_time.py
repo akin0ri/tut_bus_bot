@@ -148,7 +148,7 @@ def format_timetable(timetable, now_date, bus_type, direction, isShuttle, shuttl
 
     if isShuttle:
         text += f"{shuttle_distance[0]} ~ {shuttle_distance[1]}の間はシャトル運行しています．\n\n"
-        text += "↓↓シャトル運行外の時刻表はこちら↓↓\n"
+        text += "↓シャトル運行外の時刻表はこちら↓\n"
 
     if len(timetable) == 0:
         text += "本日のバス運行は終了しました。\n"
@@ -190,7 +190,7 @@ if __name__ == "__main__":
     now_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
     # now_date = datetime(2024, 4, 8, 8, 30, 0, 0, tzinfo=timezone(timedelta(hours=+9), 'JST'))
     isWeekdays = now_date.weekday() < 5
-    direction = 1
+    direction = 2
     bus_type = "minamino"
 
     # print(f"hachi->shcool : {get_hachioji_bus_times(isWeekdays, now_date, 1)}")
