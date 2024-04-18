@@ -168,7 +168,6 @@ def format_timetable(timetable, now_date, bus_type, direction, isShuttle, shuttl
 # direction: "up":1 or "down":0
 def get_last_5_bus_times(bus_type : str, direction : int):
     now_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
-    now_date = datetime(2024, 4, 8, 8, 30, 0, 0, tzinfo=timezone(timedelta(hours=+9), 'JST'))
     isWeekdays = now_date.weekday() < 5
     
     if now_date.weekday() < 6:
