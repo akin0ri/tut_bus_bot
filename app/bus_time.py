@@ -20,8 +20,9 @@ def get_hachioji_bus_times(isWeekdays, now_date, direction):
                     if before_row[0] == "1":
                         isShuttle = True
                         shuttle_distance = [before_row[1], before_row[3]]
-
-                    next_bus_times.append([row[direction], row[direction+1]])
+                    
+                    if row[0] != "1":
+                        next_bus_times.append([row[direction], row[direction+1]])
                     if len(next_bus_times) > 5:
                         break
                 else:
@@ -42,7 +43,8 @@ def get_hachioji_bus_times(isWeekdays, now_date, direction):
                         isShuttle = True
                         shuttle_distance = [before_row[1], before_row[3]]
 
-                    next_bus_times.append([row[direction], row[direction+1]])
+                    if row[0] != "1":
+                        next_bus_times.append([row[direction], row[direction+1]])
                     if len(next_bus_times) > 5:
                         break
                 else:
@@ -70,7 +72,8 @@ def get_minamino_bus_times(isWeekdays, now_date, direction):
                         isShuttle = True
                         shuttle_distance = [before_row[1], before_row[3]]
                     
-                    next_bus_times.append([row[direction], row[direction+1]])
+                    if row[0] != "1":
+                        next_bus_times.append([row[direction], row[direction+1]])
                     if len(next_bus_times) > 5:
                         break
                 else:
@@ -91,7 +94,8 @@ def get_minamino_bus_times(isWeekdays, now_date, direction):
                         isShuttle = True
                         shuttle_distance = [before_row[1], before_row[3]]
                     
-                    next_bus_times.append([row[direction], row[direction+1]])
+                    if row[0] != "1":
+                        next_bus_times.append([row[direction], row[direction+1]])
                     if len(next_bus_times) > 5:
                         break
                 else:
@@ -120,7 +124,8 @@ def get_dormitory_bus_times(isWeekdays, now_date, direction):
                         shuttle_distance = [before_row[1], before_row[3]]
 
                     
-                    next_bus_times.append([row[direction], row[direction+1]])
+                    if row[0] != "1":
+                        next_bus_times.append([row[direction], row[direction+1]])
                     if len(next_bus_times) > 5:
                         break
                 else:
