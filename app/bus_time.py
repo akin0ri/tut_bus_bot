@@ -17,7 +17,7 @@ def get_hachioji_bus_times(isWeekdays, now_date, direction):
 
                 if table_time > now_date:
                     # set shuttle flag
-                    if before_row[0] == "1":
+                    if row[0] == "1":
                         isShuttle = True
                         shuttle_distance = [before_row[1], before_row[3]]
                     
@@ -39,7 +39,7 @@ def get_hachioji_bus_times(isWeekdays, now_date, direction):
 
                 if table_time > now_date:
                     # set shuttle flag
-                    if before_row[0] == "1":
+                    if row[0] == "1":
                         isShuttle = True
                         shuttle_distance = [before_row[1], before_row[3]]
 
@@ -68,7 +68,7 @@ def get_minamino_bus_times(isWeekdays, now_date, direction):
 
                 if table_time > now_date:
                     # set shuttle flag
-                    if before_row[0] == "1":
+                    if row[0] == "1":
                         isShuttle = True
                         shuttle_distance = [before_row[1], before_row[3]]
                     
@@ -90,7 +90,7 @@ def get_minamino_bus_times(isWeekdays, now_date, direction):
 
                 if table_time > now_date:
                     # set shuttle flag
-                    if before_row[0] == "1":
+                    if row[0] == "1":
                         isShuttle = True
                         shuttle_distance = [before_row[1], before_row[3]]
                     
