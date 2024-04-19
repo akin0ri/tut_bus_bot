@@ -17,12 +17,15 @@ def get_hachioji_bus_times(isWeekdays, now_date, direction):
 
                 if table_time > now_date:
                     # set shuttle flag
-                    if row[0] == "1":
+                    if before_row[0] == "1":
                         isShuttle = True
                         shuttle_distance = [before_row[1], before_row[3]]
                     
                     if row[0] != "1":
                         next_bus_times.append([row[direction], row[direction+1]])
+                    else:
+                        isShuttle = True
+                        shuttle_distance = [row[1], row[3]]
                     if len(next_bus_times) > 5:
                         break
                 else:
@@ -39,12 +42,15 @@ def get_hachioji_bus_times(isWeekdays, now_date, direction):
 
                 if table_time > now_date:
                     # set shuttle flag
-                    if row[0] == "1":
+                    if before_row[0] == "1":
                         isShuttle = True
                         shuttle_distance = [before_row[1], before_row[3]]
 
                     if row[0] != "1":
                         next_bus_times.append([row[direction], row[direction+1]])
+                    else:
+                        isShuttle = True
+                        shuttle_distance = [row[1], row[3]]
                     if len(next_bus_times) > 5:
                         break
                 else:
@@ -68,12 +74,15 @@ def get_minamino_bus_times(isWeekdays, now_date, direction):
 
                 if table_time > now_date:
                     # set shuttle flag
-                    if row[0] == "1":
+                    if before_row[0] == "1":
                         isShuttle = True
                         shuttle_distance = [before_row[1], before_row[3]]
                     
                     if row[0] != "1":
                         next_bus_times.append([row[direction], row[direction+1]])
+                    else:
+                        isShuttle = True
+                        shuttle_distance = [row[1], row[3]]
                     if len(next_bus_times) > 5:
                         break
                 else:
@@ -90,12 +99,15 @@ def get_minamino_bus_times(isWeekdays, now_date, direction):
 
                 if table_time > now_date:
                     # set shuttle flag
-                    if row[0] == "1":
+                    if before_row[0] == "1":
                         isShuttle = True
                         shuttle_distance = [before_row[1], before_row[3]]
                     
                     if row[0] != "1":
                         next_bus_times.append([row[direction], row[direction+1]])
+                    else:
+                        isShuttle = True
+                        shuttle_distance = [row[1], row[3]]
                     if len(next_bus_times) > 5:
                         break
                 else:
@@ -126,6 +138,9 @@ def get_dormitory_bus_times(isWeekdays, now_date, direction):
                     
                     if row[0] != "1":
                         next_bus_times.append([row[direction], row[direction+1]])
+                    else:
+                        isShuttle = True
+                        shuttle_distance = [row[1], row[3]]
                     if len(next_bus_times) > 5:
                         break
                 else:
@@ -173,6 +188,7 @@ def format_timetable(timetable, now_date, bus_type, direction, isShuttle, shuttl
 # direction: "up":1 or "down":0
 def get_last_5_bus_times(bus_type : str, direction : int):
     now_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
+    now_date = datetime(2024, 4, 8, 14, 30, 0, 0, tzinfo=timezone(timedelta(hours=+9), 'JST'))
     isWeekdays = now_date.weekday() < 5
     
     if now_date.weekday() < 6:
@@ -211,5 +227,5 @@ if __name__ == "__main__":
     
     isShuttle, timetable, shuttle_distance = get_hachioji_bus_times(isWeekdays, now_date, direction)
     # print(format_timetable(timetable,now_date , bus_type, direction, isShuttle, shuttle_distance))
-    print(get_last_5_bus_times("minamino", 1))
+    print(get_last_5_bus_times("hachioji", 1))
     
