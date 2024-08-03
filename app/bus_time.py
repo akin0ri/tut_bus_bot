@@ -307,9 +307,4 @@ if __name__ == "__main__":
     
     isShuttle, timetable, shuttle_distance = get_hachioji_bus_times(isWeekdays, now_date, direction, extraordinary = 1)
     # print(format_timetable(timetable,now_date , bus_type, direction, isShuttle, shuttle_distance))
-<<<<<<< HEAD
     print(get_last_5_bus_times("dormitory", 1))
-    
-=======
-    print(get_last_5_bus_times("hachioji", 1))
->>>>>>> be60f6e (Update shuttle time tables)
