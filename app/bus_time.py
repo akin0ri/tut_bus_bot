@@ -151,16 +151,19 @@ def get_dormitory_bus_times(isWeekdays, now_date, direction, extraordinary=0):
         weekdays_file = "/workspace/extraordinary_time_table/1/dormitory.csv"
     elif extraordinary == 2:
         weekdays_file = "/workspace/extraordinary_time_table/2/dormitory.csv"
-    elif extraordinary == 2:
+    elif extraordinary == 3:
         weekdays_file = "/workspace/extraordinary_time_table/3/dormitory.csv"
     else:
         weekdays_file = "/workspace/app/latest_time_table/dormitory_weekdays.csv"
 
-
     if isWeekdays:
         with open(weekdays_file, "r") as f:
             reader = csv.reader(f)
-            before_row = next(reader)
+            try:
+                before_row = next(reader)
+            except StopIteration:
+                # ファイルが空の場合は空のリストを返す
+                return isShuttle, next_bus_times, shuttle_distance
 
             for row in reader:
                 hour, minute = row[direction].split(":")
