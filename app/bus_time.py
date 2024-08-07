@@ -270,8 +270,6 @@ def get_last_5_bus_times(bus_type : str, direction : int):
         extraordinary = 0
     # extraordinary setting end
     
-    print(extraordinary)
-    
     if bus_type == "hachioji":
         isShuttle, timetable, shuttle_distance = get_hachioji_bus_times(isWeekdays, now_date, direction, extraordinary)
     elif bus_type == "minamino":
@@ -310,5 +308,4 @@ if __name__ == "__main__":
     
     isShuttle, timetable, shuttle_distance = get_hachioji_bus_times(isWeekdays, now_date, direction, extraordinary = 1)
     # print(format_timetable(timetable,now_date , bus_type, direction, isShuttle, shuttle_distance))
-    print(get_last_5_bus_times("hachioji", 0))
-    print(get_last_5_bus_times("hachioji", 0))
+    print(get_last_5_bus_times("hachioji", 1))
