@@ -224,25 +224,25 @@ def get_last_5_bus_times(bus_type : str, direction : int):
     # extraordinary setting start
     # extraordinary = 1 に該当する日付を設定
     extraordinary_1_dates = [
-        datetime(2024, 7, 27, tzinfo=jst).date(),
-        datetime(2024, 7, 28, tzinfo=jst).date(),
-        datetime(2024, 8, 3, tzinfo=jst).date(),
-        datetime(2024, 8, 4, tzinfo=jst).date(),
-        datetime(2024, 8, 17, tzinfo=jst).date(),
-        datetime(2024, 8, 18, tzinfo=jst).date(),
-        datetime(2024, 8, 19, tzinfo=jst).date(),
-        datetime(2024, 8, 24, tzinfo=jst).date(),
-        datetime(2024, 8, 25, tzinfo=jst).date(),
-        datetime(2024, 9, 1, tzinfo=jst).date(),
-        datetime(2024, 9, 16, tzinfo=jst).date()
+        datetime(2024, 7, 27, tzinfo=timezone(timedelta(hours=+9), 'JST')),
+        datetime(2024, 7, 28, tzinfo=timezone(timedelta(hours=+9), 'JST')),
+        datetime(2024, 8, 3, tzinfo=timezone(timedelta(hours=+9), 'JST')),
+        datetime(2024, 8, 4, tzinfo=timezone(timedelta(hours=+9), 'JST')),
+        datetime(2024, 8, 17, tzinfo=timezone(timedelta(hours=+9), 'JST')),
+        datetime(2024, 8, 18, tzinfo=timezone(timedelta(hours=+9), 'JST')),
+        datetime(2024, 8, 19, tzinfo=timezone(timedelta(hours=+9), 'JST')),
+        datetime(2024, 8, 24, tzinfo=timezone(timedelta(hours=+9), 'JST')),
+        datetime(2024, 8, 25, tzinfo=timezone(timedelta(hours=+9), 'JST')),
+        datetime(2024, 9, 1, tzinfo=timezone(timedelta(hours=+9), 'JST')),
+        datetime(2024, 9, 16, tzinfo=timezone(timedelta(hours=+9), 'JST'))
     ]
 
     # extraordinary = 2 の条件: 2024年8月7日〜9月10日（除外日を除く）かつ月〜金曜日のみ
-    start_date_2 = datetime(2024, 8, 7, tzinfo=jst).date()
-    end_date_2 = datetime(2024, 9, 10, tzinfo=jst).date()
+    start_date_2 = datetime(2024, 8, 7, tzinfo=timezone(timedelta(hours=+9), 'JST'))
+    end_date_2 = datetime(2024, 9, 10, tzinfo=timezone(timedelta(hours=+9), 'JST'))
     excluded_periods_2 = [
-        (datetime(2024, 8, 10, tzinfo=jst).date(), datetime(2024, 8, 18, tzinfo=jst).date()),
-        (datetime(2024, 8, 21, tzinfo=jst).date(), datetime(2024, 8, 25, tzinfo=jst).date())
+        (datetime(2024, 8, 10, tzinfo=timezone(timedelta(hours=+9), 'JST')), datetime(2024, 8, 18, tzinfo=timezone(timedelta(hours=+9), 'JST'))),
+        (datetime(2024, 8, 21, tzinfo=timezone(timedelta(hours=+9), 'JST')), datetime(2024, 8, 25, tzinfo=timezone(timedelta(hours=+9), 'JST')))
     ]
 
     extraordinary_2_dates = []
@@ -255,8 +255,8 @@ def get_last_5_bus_times(bus_type : str, direction : int):
 
     # extraordinary = 3 の条件: 2024年8月31日・9月7日
     extraordinary_3_dates = [
-        datetime(2024, 8, 31, tzinfo=jst).date(),
-        datetime(2024, 9, 7, tzinfo=jst).date()
+        datetime(2024, 8, 31, tzinfo=timezone(timedelta(hours=+9), 'JST')),
+        datetime(2024, 9, 7, tzinfo=timezone(timedelta(hours=+9), 'JST'))
     ]
 
     # extraordinary の値を設定
