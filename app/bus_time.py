@@ -6,6 +6,8 @@ def get_hachioji_bus_times(isWeekdays, now_date, direction, extraordinary=0):
     isShuttle = False
     shuttle_distance = None
     
+    print(extraordinary, type(extraordinary))
+    
     if extraordinary == 1:
         weekdays_file = "/workspace/extraordinary_time_table/1/hachioji.csv"
         holiday_file = "/workspace/extraordinary_time_table/1/hachioji.csv"
@@ -18,6 +20,8 @@ def get_hachioji_bus_times(isWeekdays, now_date, direction, extraordinary=0):
     else:
         weekdays_file = "/workspace/app/latest_time_table/hachioji_weekdays.csv"
         holiday_file = "/workspace/app/latest_time_table/hachioji_holiday.csv"
+    
+    print(weekdays_file)
 
     if isWeekdays:
         with open(weekdays_file, "r") as f:
@@ -219,44 +223,50 @@ def format_timetable(timetable, now_date, bus_type, direction, isShuttle, shuttl
 # direction: "up":1 or "down":0
 def get_last_5_bus_times(bus_type : str, direction : int):
     now_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
+    now_date = datetime(2024, 8, 7, 12, 30, 0, 0, tzinfo=timezone(timedelta(hours=+9), 'JST'))
     isWeekdays = now_date.weekday() < 5
     
     # extraordinary setting start
     # extraordinary = 1 に該当する日付を設定
     extraordinary_1_dates = [
-        datetime(2024, 7, 27, tzinfo=timezone(timedelta(hours=+9), 'JST')),
-        datetime(2024, 7, 28, tzinfo=timezone(timedelta(hours=+9), 'JST')),
-        datetime(2024, 8, 3, tzinfo=timezone(timedelta(hours=+9), 'JST')),
-        datetime(2024, 8, 4, tzinfo=timezone(timedelta(hours=+9), 'JST')),
-        datetime(2024, 8, 17, tzinfo=timezone(timedelta(hours=+9), 'JST')),
-        datetime(2024, 8, 18, tzinfo=timezone(timedelta(hours=+9), 'JST')),
-        datetime(2024, 8, 19, tzinfo=timezone(timedelta(hours=+9), 'JST')),
-        datetime(2024, 8, 24, tzinfo=timezone(timedelta(hours=+9), 'JST')),
-        datetime(2024, 8, 25, tzinfo=timezone(timedelta(hours=+9), 'JST')),
-        datetime(2024, 9, 1, tzinfo=timezone(timedelta(hours=+9), 'JST')),
-        datetime(2024, 9, 16, tzinfo=timezone(timedelta(hours=+9), 'JST'))
+        datetime(2024, 7, 27, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 7, 28, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 8, 3, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 8, 4, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 8, 17, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 8, 18, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 8, 19, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 8, 24, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 8, 25, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 9, 1, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 9, 16, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
     ]
 
     # extraordinary = 2 の条件: 2024年8月7日〜9月10日（除外日を除く）かつ月〜金曜日のみ
-    start_date_2 = datetime(2024, 8, 7, tzinfo=timezone(timedelta(hours=+9), 'JST'))
-    end_date_2 = datetime(2024, 9, 10, tzinfo=timezone(timedelta(hours=+9), 'JST'))
-    excluded_periods_2 = [
-        (datetime(2024, 8, 10, tzinfo=timezone(timedelta(hours=+9), 'JST')), datetime(2024, 8, 18, tzinfo=timezone(timedelta(hours=+9), 'JST'))),
-        (datetime(2024, 8, 21, tzinfo=timezone(timedelta(hours=+9), 'JST')), datetime(2024, 8, 25, tzinfo=timezone(timedelta(hours=+9), 'JST')))
+    extraordinary_2_dates = [
+        datetime(2024, 8, 7, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 8, 8, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 8, 9, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 8, 19, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 8, 20, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 8, 26, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 8, 27, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 8, 28, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 8, 29, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 8, 30, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 9, 2, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 9, 3, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 9, 4, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 9, 5, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 9, 6, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 9, 9, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 9, 10, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
     ]
-
-    extraordinary_2_dates = []
-    current_date = start_date_2
-    while current_date <= end_date_2:
-        if (current_date.weekday() < 5 and  # 月〜金曜日
-            not any(start <= current_date <= end for start, end in excluded_periods_2)):
-            extraordinary_2_dates.append(current_date)
-        current_date += timedelta(days=1)
 
     # extraordinary = 3 の条件: 2024年8月31日・9月7日
     extraordinary_3_dates = [
-        datetime(2024, 8, 31, tzinfo=timezone(timedelta(hours=+9), 'JST')),
-        datetime(2024, 9, 7, tzinfo=timezone(timedelta(hours=+9), 'JST'))
+        datetime(2024, 8, 31, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 9, 7, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
     ]
 
     # extraordinary の値を設定
@@ -269,6 +279,8 @@ def get_last_5_bus_times(bus_type : str, direction : int):
     else:
         extraordinary = 0
     # extraordinary setting end
+    
+    print(extraordinary)
     
     if bus_type == "hachioji":
         isShuttle, timetable, shuttle_distance = get_hachioji_bus_times(isWeekdays, now_date, direction, extraordinary)
