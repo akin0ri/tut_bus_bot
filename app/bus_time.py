@@ -223,7 +223,7 @@ def format_timetable(timetable, now_date, bus_type, direction, isShuttle, shuttl
 # direction: "up":1 or "down":0
 def get_last_5_bus_times(bus_type : str, direction : int):
     now_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
-    # now_date = datetime(2024, 8, 31, 12, 30, 0, 0, tzinfo=timezone(timedelta(hours=+9), 'JST'))
+    # now_date = datetime(2024, 8, 10, 12, 30, 0, 0, tzinfo=timezone(timedelta(hours=+9), 'JST'))
     isWeekdays = now_date.weekday() < 5
     
     # extraordinary setting start
@@ -253,7 +253,6 @@ def get_last_5_bus_times(bus_type : str, direction : int):
         datetime(2024, 8, 27, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
         datetime(2024, 8, 28, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
         datetime(2024, 8, 29, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 8, 30, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
         datetime(2024, 9, 2, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
         datetime(2024, 9, 3, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
         datetime(2024, 9, 4, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
@@ -269,6 +268,12 @@ def get_last_5_bus_times(bus_type : str, direction : int):
         datetime(2024, 9, 7, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
     ]
 
+    # extraordinary = 4 の条件: 2024年8月10日～18日、8月21日～25日
+    extraordinary_4_periods = [
+        (datetime(2024, 8, 10, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(), datetime(2024, 8, 18, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()),
+        (datetime(2024, 8, 21, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(), datetime(2024, 8, 25, tzinfo=timezone(timedelta(hours=+9), 'JST')).date())
+    ]
+
     # extraordinary の値を設定
     if now_date.date() in extraordinary_3_dates:
         extraordinary = 3
@@ -276,11 +281,16 @@ def get_last_5_bus_times(bus_type : str, direction : int):
         extraordinary = 1
     elif now_date.date() in extraordinary_2_dates:
         extraordinary = 2
+    elif any(start <= now_date.date() <= end for start, end in extraordinary_4_periods):
+        extraordinary = 4
     else:
         extraordinary = 0
     # extraordinary setting end
-    
+
     print(extraordinary)
+    
+    if extraordinary == 4:
+        return "現在，休校期間のためバスは運行していません．"
     
     if bus_type == "hachioji":
         isShuttle, timetable, shuttle_distance = get_hachioji_bus_times(isWeekdays, now_date, direction, extraordinary)
