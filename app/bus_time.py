@@ -291,6 +291,9 @@ def get_last_5_bus_times(bus_type : str, direction : int):
     
     if extraordinary == 4:
         return "現在，休校期間のためバスは運行していません．"
+
+    if extraordinary == 0 and now_date.weekday() == 7:
+        return "本日は運行していません．"
     
     if bus_type == "hachioji":
         isShuttle, timetable, shuttle_distance = get_hachioji_bus_times(isWeekdays, now_date, direction, extraordinary)
