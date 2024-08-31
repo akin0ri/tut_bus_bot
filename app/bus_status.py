@@ -89,6 +89,7 @@ def get_bus_status(num):
             
         reply_text_list += text + "\n"
 
+    reply_text_list += "時刻は目安です。遅れる場合があります。"
     return reply_text_list
         
 if __name__ == "__main__":
