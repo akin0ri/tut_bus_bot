@@ -286,8 +286,6 @@ def get_last_5_bus_times(bus_type : str, direction : int):
     else:
         extraordinary = 0
     # extraordinary setting end
-
-    print(extraordinary)
     
     if extraordinary == 4:
         return "現在，休校期間のためバスは運行していません．"
