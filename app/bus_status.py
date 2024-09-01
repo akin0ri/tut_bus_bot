@@ -89,7 +89,7 @@ def get_bus_status(num):
             
         reply_text_list += text + "\n"
 
-    reply_text_list += "時刻は目安です。遅れる場合があります。"
+    reply_text_list += "時刻は目安です。遅れる場合があります。\n\n 詳しいバス運行情報は公式サイトをご確認ください。(https://www.teu.ac.jp/campus/access/006644.html)"
     return reply_text_list
         
 if __name__ == "__main__":
