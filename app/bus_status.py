@@ -74,15 +74,15 @@ def get_bus_status(num):
 
         # extraordinary の値を設定
         if now_date.date() in extraordinary_3_dates:
-            text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：臨時時刻での運行"
+            text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：臨時時刻表(土曜)での運行"
         elif now_date.date() in extraordinary_1_dates:
-            text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：臨時時刻での運行"
+            text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：臨時時刻(オーキャンなど)での運行"
         elif now_date.date() in extraordinary_2_dates:
-            text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：臨時時刻での運行"
+            text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：臨時時刻(平日)での運行"
         elif any(start <= now_date.date() <= end for start, end in extraordinary_4_periods):
             text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：運行なし"
         else:
-            if now_date.weekday() == 7:
+            if now_date.weekday() == 6:
                 text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：運行なし"
             else:
                 text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：通常時刻での運行"            
