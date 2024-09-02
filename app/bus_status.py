@@ -19,7 +19,8 @@ def get_weekday_jst(jst_time):
     return weekday_translation[english_weekday]
 
 def get_bus_status(num):
-    reply_text_list = "運行予定\n\n"
+    text_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
+    reply_text_list = f"【運行予定 {text_date.strftime('%H:%M:%S')}現在】\n】\n\n"
     for i in range(num):
         now_date = datetime.now(timezone(timedelta(hours=+9), 'JST')) + timedelta(days=int(i))
         
@@ -89,7 +90,7 @@ def get_bus_status(num):
             
         reply_text_list += text + "\n"
 
-    reply_text_list += "時刻は目安です。遅れる場合があります。\n\n 詳しいバス運行情報は公式サイトをご確認ください。(https://www.teu.ac.jp/campus/access/006644.html)"
+    reply_text_list += "詳しいバス運行情報は公式サイトをご確認ください。(https://www.teu.ac.jp/campus/access/006644.html)"
     return reply_text_list
         
 if __name__ == "__main__":
