@@ -20,7 +20,7 @@ def get_weekday_jst(jst_time):
 
 def get_bus_status(num):
     text_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
-    reply_text_list = f"【運行予定 {text_date.strftime('%H:%M:%S')}現在】\n】\n\n"
+    reply_text_list = f"【運行予定 {text_date.strftime('%H:%M:%S')}現在】\n\n"
     for i in range(num):
         now_date = datetime.now(timezone(timedelta(hours=+9), 'JST')) + timedelta(days=int(i))
         
@@ -75,22 +75,22 @@ def get_bus_status(num):
 
         # extraordinary の値を設定
         if now_date.date() in extraordinary_3_dates:
-            text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：臨時時刻表(土曜)での運行"
+            text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：臨時(土曜)での運行"
         elif now_date.date() in extraordinary_1_dates:
-            text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：臨時時刻(オーキャンなど)での運行"
+            text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：臨時(オーキャンなど)での運行"
         elif now_date.date() in extraordinary_2_dates:
-            text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：臨時時刻(平日)での運行"
+            text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：臨時(平日)での運行"
         elif any(start <= now_date.date() <= end for start, end in extraordinary_4_periods):
             text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：運行なし"
         else:
             if now_date.weekday() == 6:
                 text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：運行なし"
             else:
-                text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：通常時刻での運行"            
+                text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：通常での運行"            
             
         reply_text_list += text + "\n"
 
-    reply_text_list += "詳しいバス運行情報は公式サイトをご確認ください。(https://www.teu.ac.jp/campus/access/006644.html)"
+    reply_text_list += "\n詳しいバス運行情報は公式サイトをご確認ください。(https://www.teu.ac.jp/campus/access/006644.html)"
     return reply_text_list
         
 if __name__ == "__main__":
