@@ -10,6 +10,7 @@ from linebot.v3.webhooks import MessageEvent, TextMessageContent
 
 from app.bus_status import get_bus_status
 from app.bus_time import get_last_5_bus_times
+from app.food_status import get_food_status
 
 app = Flask(__name__)
 
@@ -53,6 +54,15 @@ def handle_message(event):
                 
             if event.message.text == "運行予定":
                 reply_text = get_bus_status(7)
+                line_bot_api.reply_message_with_http_info(
+                    ReplyMessageRequest(
+                        reply_token=event.reply_token,
+                        messages=[TextMessage(text=reply_text)]
+                    )
+                )
+            
+            elif event.message.text == "厚生施設営業時間":
+                reply_text = get_food_status()
                 line_bot_api.reply_message_with_http_info(
                     ReplyMessageRequest(
                         reply_token=event.reply_token,
