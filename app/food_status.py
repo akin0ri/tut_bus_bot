@@ -51,8 +51,8 @@ def get_food_status():
     "片柳研究所 弁当販売": ["0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"]
     }
     
-    text_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
-    reply_text = f"【運行予定 {text_date.strftime('%H:%M:%S')}現在】\n\n"
+    now_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
+    reply_text = f"【営業予定 {now_date.month}月{now_date.day}日】\n\n"
     reply_text += "\n".join(daily_status(data))
 
     return reply_text
