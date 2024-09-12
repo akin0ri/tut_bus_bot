@@ -12,8 +12,8 @@ def get_hachioji_bus_times(isWeekdays, now_date, direction, extraordinary=0):
         weekdays_file = "/workspace/extraordinary_time_table/1/hachioji.csv"
         holiday_file = "/workspace/extraordinary_time_table/1/hachioji.csv"
     elif extraordinary == 2:
-        weekdays_file = "/workspace/extraordinary_time_table/2/hachioji.csv"
-        holiday_file = "/workspace/extraordinary_time_table/2/hachioji.csv"
+        weekdays_file = "/workspace/extraordinary_time_table/2/hachioji_weekdays.csv"
+        holiday_file = "/workspace/extraordinary_time_table/2/hachioji_holiday.csv"
     elif extraordinary == 3:
         weekdays_file = "/workspace/extraordinary_time_table/3/hachioji.csv"
         holiday_file = "/workspace/extraordinary_time_table/3/hachioji.csv"
@@ -84,8 +84,8 @@ def get_minamino_bus_times(isWeekdays, now_date, direction, extraordinary=0):
         weekdays_file = "/workspace/extraordinary_time_table/1/minamino.csv"
         holiday_file = "/workspace/extraordinary_time_table/1/minamino.csv"
     elif extraordinary == 2:
-        weekdays_file = "/workspace/extraordinary_time_table/2/minamino.csv"
-        holiday_file = "/workspace/extraordinary_time_table/2/minamino.csv"
+        weekdays_file = "/workspace/extraordinary_time_table/2/minamino_weekdays.csv"
+        holiday_file = "/workspace/extraordinary_time_table/2/minamino_holiday.csv"
     elif extraordinary == 3:
         weekdays_file = "/workspace/extraordinary_time_table/3/minamino.csv"
         holiday_file = "/workspace/extraordinary_time_table/3/minamino.csv"
@@ -223,74 +223,28 @@ def format_timetable(timetable, now_date, bus_type, direction, isShuttle, shuttl
 # direction: "up":1 or "down":0
 def get_last_5_bus_times(bus_type : str, direction : int):
     now_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
-    # now_date = datetime(2024, 8, 10, 12, 30, 0, 0, tzinfo=timezone(timedelta(hours=+9), 'JST'))
+    # now_date = datetime(2024, 9, 24, 12, 30, 0, 0, tzinfo=timezone(timedelta(hours=+9), 'JST'))
     isWeekdays = now_date.weekday() < 5
-    
+
     # extraordinary setting start
     # extraordinary = 1 に該当する日付を設定
     extraordinary_1_dates = [
-        datetime(2024, 7, 27, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 7, 28, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 8, 3, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 8, 4, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 8, 17, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 8, 18, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 8, 19, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 8, 24, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 8, 25, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 9, 1, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
         datetime(2024, 9, 16, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
     ]
 
-    # extraordinary = 2 の条件: 2024年8月7日〜9月10日（除外日を除く）かつ月〜金曜日のみ
-    extraordinary_2_dates = [
-        datetime(2024, 8, 7, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 8, 8, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 8, 9, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 8, 19, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 8, 20, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 8, 26, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 8, 27, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 8, 28, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 8, 29, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 9, 2, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 9, 3, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 9, 4, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 9, 5, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 9, 6, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 9, 9, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 9, 10, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
-    ]
-
-    # extraordinary = 3 の条件: 2024年8月31日・9月7日
-    extraordinary_3_dates = [
-        datetime(2024, 8, 31, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 9, 7, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
-    ]
-
-    # extraordinary = 4 の条件: 2024年8月10日～18日、8月21日～25日
-    extraordinary_4_periods = [
-        (datetime(2024, 8, 10, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(), datetime(2024, 8, 18, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()),
-        (datetime(2024, 8, 21, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(), datetime(2024, 8, 25, tzinfo=timezone(timedelta(hours=+9), 'JST')).date())
-    ]
+    # extraordinary = 2 の条件: 2024年9月11日(水) ～ 9月21日(土)
+    extraordinary_2_start = datetime(2024, 9, 11, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
+    extraordinary_2_end = datetime(2024, 9, 21, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
 
     # extraordinary の値を設定
-    if now_date.date() in extraordinary_3_dates:
-        extraordinary = 3
-    elif now_date.date() in extraordinary_1_dates:
+    if now_date.date() in extraordinary_1_dates:
         extraordinary = 1
-    elif now_date.date() in extraordinary_2_dates:
+    elif extraordinary_2_start <= now_date.date() <= extraordinary_2_end:
         extraordinary = 2
-    elif any(start <= now_date.date() <= end for start, end in extraordinary_4_periods):
-        extraordinary = 4
     else:
         extraordinary = 0
-    # extraordinary setting end
-    
-    if extraordinary == 4:
-        return "現在，休校期間のためバスは運行していません．"
 
-    if extraordinary == 0 and now_date.weekday() == 7:
+    if (extraordinary == 0 and now_date.weekday() == 7) or (extraordinary == 2 and now_date.weekday() == 7):
         return "本日は運行していません．"
     
     if bus_type == "hachioji":
