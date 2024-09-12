@@ -1,37 +1,48 @@
 from datetime import datetime, timedelta, timezone
 
 def daily_status(data):
-    # 現在の日本標準時の日付を取得
     now_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
-    # 月と日を取得
+    # now_date = datetime(2024, 9, 24, 12, 30, 0, 0, tzinfo=timezone(timedelta(hours=+9), 'JST'))
     month = now_date.month
     day = now_date.day
     
-    # 9月の日付が有効範囲（1日から23日）内であるか確認
+    result = []
+    
+    operating_hours = {
+        "ローズキッチンＡ": "11:00 ~ 14:00",
+        "802-TERRACE": "11:00 ~ 14:00",
+        "弁当販売": "11:00 ~ 13:00",
+        "麺やともえ屋": "11:00 ~ 14:00",
+        "パンだパンダ": "11:00 ~ 14:00",
+        "吉野家": "11:00 ~ 14:00",
+        "ラーメン椿家": "11:00 ~ 14:00",
+        "セブン‐イレブン": "8:00 ~ 20:00",
+        "セブンｰイレブン（朝販売）": "◯",
+        "マクドナルド": "9:30 ~ 19:00",
+        "講義棟Ｃ ヤマザキ": "◯",
+        "講義実験棟 ヤマザキ": "◯",
+        "研究棟A･B フードカウンター": "11:00 ~ 13:00",
+        "片柳研究所 弁当販売": "11:00 ~ 13:00"
+    }
+    
     if month == 9 and 1 <= day <= 23:
-        # インデックスは0から始まるため、日付から1を引く
         index = day - 1
-        # 結果を格納するリスト
-        result = []
-        # 各施設の営業状況を取得
         for facility, status_list in data.items():
-            # 状況を取得
             status = status_list[index]
-            # 表示形式に変換
             if status == "0":
                 status_display = "✕"
             elif status == "1":
-                status_display = "◯"
+                status_display = f"◯ ({operating_hours[facility]})"
             elif status == "2":
                 status_display = "OC用に営業"
             else:
-                status_display = status  # 8-18のような時間帯のまま表示
-            # 結果を追加
+                status_display = status
             result.append(f"{facility} : {status_display}")
-        return result
     else:
-        return ["指定された日付が範囲外です。"]
+        for facility in data.keys():
+            result.append(f"{facility} : {operating_hours[facility]}")
     
+    return result
 
 def get_food_status():    
     data = {
@@ -56,3 +67,6 @@ def get_food_status():
     reply_text += "\n".join(daily_status(data))
 
     return reply_text
+
+if __name__ == "__main__":
+    print(get_food_status())
