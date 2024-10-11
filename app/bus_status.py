@@ -75,7 +75,6 @@ def get_bus_status(num):
 
         reply_text_list += text + "\n"
 
-    reply_text_list += "\n詳しいバス運行情報は公式サイトをご確認ください。(https://www.teu.ac.jp/campus/access/006644.html)"
     return reply_text_list
         
 if __name__ == "__main__":
