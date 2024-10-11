@@ -12,8 +12,8 @@ def get_hachioji_bus_times(isWeekdays, now_date, direction, extraordinary=0):
         weekdays_file = "/workspace/extraordinary_time_table/1/hachioji.csv"
         holiday_file = "/workspace/extraordinary_time_table/1/hachioji.csv"
     elif extraordinary == 2:
-        weekdays_file = "/workspace/extraordinary_time_table/2/hachioji_weekdays.csv"
-        holiday_file = "/workspace/extraordinary_time_table/2/hachioji_holiday.csv"
+        weekdays_file = "/workspace/extraordinary_time_table/2/hachioji.csv"
+        holiday_file = "/workspace/extraordinary_time_table/2/hachioji.csv"
     elif extraordinary == 3:
         weekdays_file = "/workspace/extraordinary_time_table/3/hachioji.csv"
         holiday_file = "/workspace/extraordinary_time_table/3/hachioji.csv"
@@ -84,8 +84,8 @@ def get_minamino_bus_times(isWeekdays, now_date, direction, extraordinary=0):
         weekdays_file = "/workspace/extraordinary_time_table/1/minamino.csv"
         holiday_file = "/workspace/extraordinary_time_table/1/minamino.csv"
     elif extraordinary == 2:
-        weekdays_file = "/workspace/extraordinary_time_table/2/minamino_weekdays.csv"
-        holiday_file = "/workspace/extraordinary_time_table/2/minamino_holiday.csv"
+        weekdays_file = "/workspace/extraordinary_time_table/2/minamino.csv"
+        holiday_file = "/workspace/extraordinary_time_table/2/minamino.csv"
     elif extraordinary == 3:
         weekdays_file = "/workspace/extraordinary_time_table/3/minamino.csv"
         holiday_file = "/workspace/extraordinary_time_table/3/minamino.csv"
@@ -223,29 +223,40 @@ def format_timetable(timetable, now_date, bus_type, direction, isShuttle, shuttl
 # direction: "up":1 or "down":0
 def get_last_5_bus_times(bus_type : str, direction : int):
     now_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
-    # now_date = datetime(2024, 9, 24, 12, 30, 0, 0, tzinfo=timezone(timedelta(hours=+9), 'JST'))
+    # now_date = datetime(2024, 10, 13, 13, 30, 0, 0, tzinfo=timezone(timedelta(hours=+9), 'JST'))
     isWeekdays = now_date.weekday() < 5
 
     # extraordinary setting start
     # extraordinary = 1 に該当する日付を設定
     extraordinary_1_dates = [
-        datetime(2024, 9, 16, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
+        datetime(2024, 10, 12, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 10, 15, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
     ]
 
-    # extraordinary = 2 の条件: 2024年9月11日(水) ～ 9月21日(土)
-    extraordinary_2_start = datetime(2024, 9, 11, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
-    extraordinary_2_end = datetime(2024, 9, 21, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
+    # extraordinary = 2 に該当する日付を設定
+    extraordinary_2_dates = [
+        datetime(2024, 10, 13, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+        datetime(2024, 10, 14, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
+    ]
+
+    # extraordinary = 3 に該当する日付を設定
+    extraordinary_3_dates = [
+        datetime(2024, 10, 16, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
+    ]
 
     # extraordinary の値を設定
     if now_date.date() in extraordinary_1_dates:
         extraordinary = 1
-    elif extraordinary_2_start <= now_date.date() <= extraordinary_2_end:
+    elif now_date.date() in extraordinary_2_dates:
         extraordinary = 2
+    elif now_date.date() in extraordinary_3_dates:
+        extraordinary = 3
     else:
         extraordinary = 0
-
-    if (extraordinary == 0 and now_date.weekday() == 7) or (extraordinary == 2 and now_date.weekday() == 7):
-        return "本日は運行していません．"
+    
+    # 紅華祭終了後戻す
+    # if (extraordinary == 0 and now_date.weekday() == 7) or (extraordinary == 2 and now_date.weekday() == 7):
+    #     return "本日は運行していません．"
     
     if bus_type == "hachioji":
         isShuttle, timetable, shuttle_distance = get_hachioji_bus_times(isWeekdays, now_date, direction, extraordinary)
