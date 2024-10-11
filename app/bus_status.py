@@ -29,23 +29,42 @@ def get_bus_status(num):
         # extraordinary setting start
         # extraordinary = 1 に該当する日付を設定
         extraordinary_1_dates = [
-            datetime(2024, 9, 16, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
+            datetime(2024, 10, 12, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+            datetime(2024, 10, 15, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
         ]
 
-        # extraordinary = 2 の条件: 2024年9月11日(水) ～ 9月21日(土)
-        extraordinary_2_start = datetime(2024, 9, 11, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
-        extraordinary_2_end = datetime(2024, 9, 21, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
+        # extraordinary = 2 に該当する日付を設定
+        extraordinary_2_dates = [
+            datetime(2024, 10, 13, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
+            datetime(2024, 10, 14, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
+        ]
+
+        # extraordinary = 3 に該当する日付を設定
+        extraordinary_3_dates = [
+            datetime(2024, 10, 16, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
+        ]
+
+        # 紅華祭終了後戻す
+        # if (extraordinary == 0 and now_date.weekday() == 7) or (extraordinary == 2 and now_date.weekday() == 7):
+        #     return "本日は運行していません．"
 
         # extraordinary の値を設定
         if now_date.date() in extraordinary_1_dates:
-            text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：臨時(オーキャン等)ダイヤ"
-        elif extraordinary_2_start <= now_date.date() <= extraordinary_2_end:
+            text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：紅華祭 臨時ダイヤ(準備等)"
+        elif now_date.date() in extraordinary_2_dates:
             if isWeekdays:
-                text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：長期休暇(平日)ダイヤ"
+                text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：紅華祭 臨時ダイヤ"
             elif now_date.weekday() == 6:
-                text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：運行なし"
+                text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：紅華祭 臨時ダイヤ"
             else:
-                text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：長期休暇(土曜)ダイヤ"
+                text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：紅華祭 臨時ダイヤ"
+        elif now_date.date() in extraordinary_3_dates:
+            if isWeekdays:
+                text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：専門休み 臨時ダイヤ"
+            elif now_date.weekday() == 6:
+                text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：専門休み 臨時ダイヤ"
+            else:
+                text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：専門休み 臨時ダイヤ"
         else:
             if isWeekdays:
                 text = f"{now_date.month}月{now_date.day}日({get_weekday_jst(now_date)})：通常(平日)ダイヤ"
