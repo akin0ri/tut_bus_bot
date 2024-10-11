@@ -61,12 +61,12 @@ def handle_message(event):
                     )
                 )
             
-            elif event.message.text == "厚生施設営業時間":
+            elif event.message.text == "問い合わせ":
                 reply_text = get_food_status()
                 line_bot_api.reply_message_with_http_info(
                     ReplyMessageRequest(
                         reply_token=event.reply_token,
-                        messages=[TextMessage(text=reply_text)]
+                        messages=[TextMessage(text="お問い合わせはこちらから \n https://forms.gle/Q3vcxdm2mXz2fBTK8")]
                     )
                 )
             
