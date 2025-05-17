@@ -15,3 +15,5 @@ HttpTrigger/function.json
 
 
 infra/.terraform/
+*.tfstate
+*.tfstate.backup
