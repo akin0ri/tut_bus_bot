@@ -1,0 +1,16 @@
+# ignore vscode file
+.vscode
+
+# ignore env file
+.env
+
+.cursorrules
+
+infra/.terraform/
+infra/*.tfstate
+infra/*.tfstate.backup
+
+HttpTrigger/local.settings.json
+HttpTrigger/function.json
+
+

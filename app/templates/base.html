@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>TUT Bus Bot 管理</title>
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('admin.timetable') }}">時刻表</a> |
+        <a href="{{ url_for('admin.history') }}">履歴</a> |
+        <a href="{{ url_for('admin.user_list') }}">ユーザー管理</a> |
+        <a href="{{ url_for('admin.delete_all') }}">全データ削除</a> |
+        <form method="post" action="{{ url_for('auth.logout') }}" style="display:inline;">
+            <button type="submit">ログアウト</button>
+        </form>
+    </nav>
+    <hr>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul>
+        {% for category, message in messages %}
+          <li style="color: {{ 'red' if category == 'danger' else 'green' if category == 'success' else 'black' }};">{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+</body>
+</html> 

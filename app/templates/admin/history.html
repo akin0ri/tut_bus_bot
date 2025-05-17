@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>臨時ダイヤ・履歴管理</h2>
+<table border="1">
+    <tr>
+        <th>ID</th><th>時刻表ID</th><th>日付</th><th>説明</th>
+    </tr>
+    {% for e in extra %}
+    <tr>
+        <td>{{ e.id }}</td>
+        <td>{{ e.timetable_id }}</td>
+        <td>{{ e.special_date }}</td>
+        <td>{{ e.description }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<a href="{{ url_for('admin.timetable') }}">戻る</a>
+{% endblock %} 
