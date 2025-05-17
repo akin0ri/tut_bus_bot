@@ -14,3 +14,4 @@ HttpTrigger/local.settings.json
 HttpTrigger/function.json
 
 
+infra/.terraform/
