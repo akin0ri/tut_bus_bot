@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>全データ削除確認</h2>
+<p>本当に全てのデータを削除しますか？この操作は元に戻せません。</p>
+<form method="post" action="{{ url_for('admin.delete_all') }}">
+    <button type="submit" onclick="return confirm('本当に削除しますか？');">削除</button>
+    <a href="{{ url_for('admin.timetable') }}">キャンセル</a>
+</form>
+{% endblock %} 

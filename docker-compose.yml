@@ -1,15 +1,37 @@
-version: '3'
+version: '3.8'
 
 services:
-  python3:
+  app:
     build: .
+    container_name: tut_bus_bot_app
+    env_file:
+      - .env
     ports:
-      - "9090:9090"
-    restart: always
-    container_name: bus_bot
-    working_dir: /workspace
+      - "5000:5000"
     volumes:
       - .:/workspace
-    command: flask run --host=0.0.0.0 --port=9090 --debugger --reload
-    # if you don't set tty true, the container will exit
-    tty: true
+    depends_on:
+      - db
+  db:
+    image: postgres:15
+    container_name: tut_bus_bot_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tutbusbot
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: tut_bus_bot_ngrok
+    command: http app:5000
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+    ports:
+      - "4040:4040"
+    depends_on:
+      - app
+volumes:
+  db_data:

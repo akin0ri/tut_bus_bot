@@ -45,11 +45,11 @@ RUN echo 'export PS1="\[\033[01;32m\]\u@\h\[\033[01;33m\] \w \[\033[01;31m\]\$(_
 WORKDIR /workspace
 
 # Copy requirements file
-COPY requirements.txt requirements.txt
+COPY requirements.txt /tmp/requirements.txt
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir -r /tmp/requirements.txt
 
 # Run any command to initialize the container
 CMD ["bash"]

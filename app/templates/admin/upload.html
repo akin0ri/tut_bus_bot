@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>CSVアップロード</h2>
+<form method="post" enctype="multipart/form-data">
+    <input type="file" name="file" accept=".csv" required>
+    <button type="submit">アップロード</button>
+</form>
+<a href="{{ url_for('admin.timetable') }}">戻る</a>
+{% endblock %} 
