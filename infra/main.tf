@@ -19,22 +19,17 @@ resource "azurerm_service_plan" "main" {
   name                = var.app_service_plan_name
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
-  os_type             = "Linux"
-  sku_name            = "Y1" # Consumption Plan
+  sku_name            = "Y1" # Consumption Plan (Windows)
+  os_type             = "Windows"
 }
 
-resource "azurerm_linux_function_app" "main" {
+resource "azurerm_windows_function_app" "main" {
   name                       = var.function_app_name
   location                   = azurerm_resource_group.main.location
   resource_group_name        = azurerm_resource_group.main.name
   service_plan_id            = azurerm_service_plan.main.id
   storage_account_name       = azurerm_storage_account.main.name
   storage_account_access_key = azurerm_storage_account.main.primary_access_key
-  site_config {
-    application_stack {
-      python_version = "3.10"
-    }
-  }
   app_settings = {
     FUNCTIONS_WORKER_RUNTIME      = "custom"
     WEBSITE_RUN_FROM_PACKAGE      = "1"
