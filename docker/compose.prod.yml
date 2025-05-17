@@ -9,4 +9,7 @@ services:
     tty: true
     working_dir: /workspace
     volumes:
-      - ..:/workspace 
+      - ..:/workspace
+    ports:
+      - "5000:5000"
+    command: flask run --host=0.0.0.0 --port=5000 
