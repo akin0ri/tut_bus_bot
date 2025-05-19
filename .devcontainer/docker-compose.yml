@@ -14,3 +14,13 @@ services:
     # setting volume (host:container)
     volumes:
       - ..:/workspace
+    # Add port mapping
+    ports:
+      - "5000:5000"
+    # Add network settings
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
