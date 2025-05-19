@@ -5,7 +5,11 @@ services:
     build: .
     container_name: tut_bus_bot_app
     env_file:
-      - .env
+      - ./.env
+    environment:
+      FLASK_ENV: "${FLASK_ENV}"
+      DATABASE_URL: "${DATABASE_URL}"
+      SECRET_KEY: "${SECRET_KEY}"
     ports:
       - "5000:5000"
     volumes:
