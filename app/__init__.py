@@ -5,6 +5,7 @@ from flask import Flask, request, abort, Blueprint, jsonify, current_app
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
+from flask_login import LoginManager
 
 from linebot.v3 import WebhookHandler
 from linebot.v3.exceptions import InvalidSignatureError
@@ -14,12 +15,15 @@ from linebot.v3.webhooks import MessageEvent, TextMessageContent
 from app.bus_status import get_bus_status
 from app.bus_time import get_last_5_bus_times
 from app.food_status import get_food_status
-from .blueprints.main_routes import main_blueprint
 from .config import Config
 
 db = SQLAlchemy()
 migrate = Migrate()
 jwt = JWTManager()
+login_manager = LoginManager()
+login_manager.login_view = 'auth.login'
+login_manager.login_message = 'このページにアクセスするにはログインが必要です。'
+login_manager.login_message_category = 'info'
 
 def create_app(config_class=Config):
     load_dotenv()
@@ -32,15 +36,18 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
+    login_manager.init_app(app)
 
     # Blueprint登録
-    from app.blueprints.api import api_bp
-    from app.blueprints.admin import admin_bp
-    from app.blueprints.auth import auth_bp
-    app.register_blueprint(api_bp)
-    app.register_blueprint(admin_bp)
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(main_blueprint)
+    from app.blueprints.api import bp as api_bp
+    from app.blueprints.admin import bp as admin_bp
+    from app.blueprints.auth import bp as auth_bp
+    from app.blueprints.main import bp as main_bp
+
+    app.register_blueprint(api_bp, url_prefix='/api')
+    app.register_blueprint(admin_bp, url_prefix='/admin')
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+    app.register_blueprint(main_bp)
 
     # set LINE channel secret and access token
     if not (access_token := environ.get("LINE_CHANNEL_ACCESS_TOKEN")):
@@ -48,7 +55,6 @@ def create_app(config_class=Config):
     if not (channel_secret := environ.get("LINE_CHANNEL_SECRET")):
         raise Exception("channel secret is not set as an environment variable")
 
-    # WebhookエンドポイントはBlueprintで管理
     return app
 
 def is_valid_secret_key(input_key: str) -> bool:
@@ -65,3 +71,5 @@ def is_valid_secret_key(input_key: str) -> bool:
 if __name__ == "__main__":
     app = create_app()
     app.run(host="0.0.0.0", port=5000, debug=True)
+
+from app import models

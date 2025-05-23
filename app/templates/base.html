@@ -31,17 +31,17 @@
         }
 
         .navbar-brand {
-            color: white !important;
+            color: black !important;
             font-weight: bold;
         }
 
         .nav-link {
-            color: rgba(255,255,255,0.8) !important;
+            color: rgba(0,0,0,0.8) !important;
             transition: color 0.3s ease;
         }
 
         .nav-link:hover {
-            color: white !important;
+            color: black !important;
         }
 
         .card {
@@ -52,7 +52,8 @@
         }
 
         .card:hover {
-            transform: translateY(-5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: box-shadow 0.2s;
         }
 
         .btn-primary {
@@ -129,40 +130,68 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                <i class="fas fa-bus me-2"></i>バス時刻表
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">バス管理システム</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.index') }}">
+                            <i class="fas fa-home"></i> トップ
+                        </a>
+                    </li>
                     {% if current_user.is_authenticated %}
                         {% if current_user.is_admin %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('admin.timetable') }}">
-                                    <i class="fas fa-clock me-1"></i>時刻表管理
-                                </a>
-                            </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="timetableDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-clock me-1"></i>時刻表管理
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="timetableDropdown">
+                                <li><a class="dropdown-item" href="{{ url_for('admin.timetable') }}"><i class="fas fa-list me-2"></i>時刻表一覧</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin.add_timetable') }}"><i class="fas fa-plus me-2"></i>時刻表追加</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin.upload') }}"><i class="fas fa-upload me-2"></i>CSVアップロード</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin.download') }}"><i class="fas fa-download me-2"></i>CSVダウンロード</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin.download_template') }}"><i class="fas fa-file-csv me-2"></i>テンプレートダウンロード</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-users me-1"></i>ユーザー管理
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="{{ url_for('admin.user_list') }}"><i class="fas fa-list me-2"></i>ユーザー一覧</a></li>
+                            </ul>
+                        </li>
                         {% endif %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.logout') }}">
-                                <i class="fas fa-sign-out-alt me-1"></i>ログアウト
-                            </a>
-                        </li>
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav">
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <span class="nav-link">
+                            <i class="fas fa-user"></i> {{ current_user.username }}
+                            {% if current_user.is_admin %}<span class="badge bg-primary">管理者</span>{% endif %}
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                            <i class="fas fa-sign-out-alt"></i> ログアウト
+                        </a>
+                    </li>
                     {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.login') }}">
-                                <i class="fas fa-sign-in-alt me-1"></i>ログイン
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.register') }}">
-                                <i class="fas fa-user-plus me-1"></i>新規登録
-                            </a>
-                        </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">
+                            <i class="fas fa-sign-in-alt"></i> ログイン
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.register') }}">
+                            <i class="fas fa-user-plus"></i> 新規登録
+                        </a>
+                    </li>
                     {% endif %}
                 </ul>
             </div>

@@ -1,117 +1,180 @@
-from . import admin_bp
-from flask import render_template, redirect, url_for, request, flash, send_file, jsonify, current_app
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.models.timetable import Timetable, ExtraTimetable
-from app.models.user import User
+from flask import render_template, request, redirect, url_for, flash, current_app, send_file
+from flask_login import login_required, current_user
+from . import bp
 from app import db
-from app.schemas.timetable import TimetableSchema
-from app.schemas.extra_timetable import ExtraTimetableSchema
-from app.utils.csv_utils import import_timetable_csv, export_timetable_csv, get_csv_template
-import io
-import datetime
+from app.models.timetable import Timetable
+from app.models.user import User
+import pandas as pd
+from datetime import datetime
+import os
 
-# ここに管理画面用のルートを追加予定 
+def admin_required(f):
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin:
+            flash('このページにアクセスする権限がありません。', 'danger')
+            return redirect(url_for('main.index'))
+        return f(*args, **kwargs)
+    decorated_function.__name__ = f.__name__
+    return decorated_function
 
-@admin_bp.route('/timetable', methods=['GET'])
-@jwt_required()
+@bp.route('/timetable')
+@login_required
+@admin_required
 def timetable():
-    timetables = Timetable.query.order_by(Timetable.valid_from.desc()).all()
+    timetables = Timetable.query.order_by(Timetable.route, Timetable.direction, Timetable.departure_time).all()
     return render_template('admin/timetable.html', timetables=timetables)
 
-@admin_bp.route('/timetable/edit/<int:timetable_id>', methods=['GET', 'POST'])
-@jwt_required()
+@bp.route('/timetable/add', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def add_timetable():
+    if request.method == 'POST':
+        timetable = Timetable(
+            route=request.form['route'],
+            direction=int(request.form['direction']),
+            departure_time=datetime.strptime(request.form['departure_time'], '%H:%M:%S').time(),
+            arrival_time=datetime.strptime(request.form['arrival_time'], '%H:%M:%S').time() if request.form['arrival_time'] else None,
+            valid_from=datetime.strptime(request.form['valid_from'], '%Y-%m-%d').date(),
+            valid_to=datetime.strptime(request.form['valid_to'], '%Y-%m-%d').date() if request.form['valid_to'] else None
+        )
+        db.session.add(timetable)
+        db.session.commit()
+        flash('時刻表を追加しました。', 'success')
+        return redirect(url_for('admin.timetable'))
+    return render_template('admin/add_timetable.html')
+
+@bp.route('/timetable/<int:timetable_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
 def edit_timetable(timetable_id):
     timetable = Timetable.query.get_or_404(timetable_id)
     if request.method == 'POST':
-        # 入力値のバリデーションと更新
-        timetable.route = request.form.get('route')
-        timetable.direction = request.form.get('direction')
-        timetable.departure_time = request.form.get('departure_time')
-        timetable.arrival_time = request.form.get('arrival_time')
-        timetable.valid_from = request.form.get('valid_from')
-        timetable.valid_to = request.form.get('valid_to')
+        timetable.route = request.form['route']
+        timetable.direction = int(request.form['direction'])
+        timetable.departure_time = datetime.strptime(request.form['departure_time'], '%H:%M:%S').time()
+        timetable.arrival_time = datetime.strptime(request.form['arrival_time'], '%H:%M:%S').time() if request.form['arrival_time'] else None
+        timetable.valid_from = datetime.strptime(request.form['valid_from'], '%Y-%m-%d').date()
+        timetable.valid_to = datetime.strptime(request.form['valid_to'], '%Y-%m-%d').date() if request.form['valid_to'] else None
         db.session.commit()
-        flash('時刻表を更新しました', 'success')
+        flash('時刻表を更新しました。', 'success')
         return redirect(url_for('admin.timetable'))
     return render_template('admin/edit_timetable.html', timetable=timetable)
 
-@admin_bp.route('/timetable/delete/<int:timetable_id>', methods=['POST'])
-@jwt_required()
+@bp.route('/timetable/<int:timetable_id>/delete', methods=['POST'])
+@login_required
+@admin_required
 def delete_timetable(timetable_id):
     timetable = Timetable.query.get_or_404(timetable_id)
     db.session.delete(timetable)
     db.session.commit()
-    flash('時刻表を削除しました', 'info')
+    flash('時刻表を削除しました。', 'success')
     return redirect(url_for('admin.timetable'))
 
-@admin_bp.route('/timetable/add', methods=['GET', 'POST'])
-@jwt_required()
-def add_timetable():
-    if request.method == 'POST':
-        # 入力値のバリデーションと追加
-        new_tt = Timetable(
-            route=request.form.get('route'),
-            direction=request.form.get('direction'),
-            departure_time=request.form.get('departure_time'),
-            arrival_time=request.form.get('arrival_time'),
-            valid_from=request.form.get('valid_from'),
-            valid_to=request.form.get('valid_to')
-        )
-        db.session.add(new_tt)
-        db.session.commit()
-        flash('時刻表を追加しました', 'success')
-        return redirect(url_for('admin.timetable'))
-    return render_template('admin/add_timetable.html')
-
-@admin_bp.route('/upload', methods=['GET', 'POST'])
-@jwt_required()
+@bp.route('/timetable/upload', methods=['GET', 'POST'])
+@login_required
+@admin_required
 def upload():
     if request.method == 'POST':
-        file = request.files.get('file')
-        if not file:
-            flash('ファイルが選択されていません', 'danger')
-            return redirect(url_for('admin.upload'))
+        if 'file' not in request.files:
+            flash('ファイルがアップロードされていません。', 'danger')
+            return redirect(request.url)
+        
+        file = request.files['file']
+        if file.filename == '':
+            flash('ファイルが選択されていません。', 'danger')
+            return redirect(request.url)
+        
+        if not file.filename.endswith('.csv'):
+            flash('CSVファイルのみアップロード可能です。', 'danger')
+            return redirect(request.url)
+        
         try:
-            import_timetable_csv(file)
-            flash('CSVをインポートしました', 'success')
+            df = pd.read_csv(file)
+            required_columns = ['route', 'direction', 'departure_time', 'arrival_time', 'valid_from', 'valid_to']
+            if not all(col in df.columns for col in required_columns):
+                flash('必要なカラムが不足しています。', 'danger')
+                return redirect(request.url)
+            
+            for _, row in df.iterrows():
+                timetable = Timetable(
+                    route=row['route'],
+                    direction=row['direction'],
+                    departure_time=datetime.strptime(row['departure_time'], '%H:%M:%S').time(),
+                    arrival_time=datetime.strptime(row['arrival_time'], '%H:%M:%S').time() if pd.notna(row['arrival_time']) else None,
+                    valid_from=datetime.strptime(row['valid_from'], '%Y-%m-%d').date(),
+                    valid_to=datetime.strptime(row['valid_to'], '%Y-%m-%d').date() if pd.notna(row['valid_to']) else None
+                )
+                db.session.add(timetable)
+            
+            db.session.commit()
+            flash('時刻表のアップロードが完了しました。', 'success')
+            return redirect(url_for('admin.timetable'))
+        
         except Exception as e:
-            flash(f'インポート失敗: {e}', 'danger')
-        return redirect(url_for('admin.upload'))
+            db.session.rollback()
+            flash(f'アップロード中にエラーが発生しました: {str(e)}', 'danger')
+            return redirect(request.url)
+    
     return render_template('admin/upload.html')
 
-@admin_bp.route('/download', methods=['GET'])
-@jwt_required()
+@bp.route('/timetable/download')
+@login_required
+@admin_required
 def download():
-    output = export_timetable_csv()
-    return send_file(output, mimetype='text/csv', as_attachment=True, download_name='timetable.csv')
+    try:
+        timetables = Timetable.query.all()
+        data = []
+        for t in timetables:
+            data.append({
+                'route': t.route,
+                'direction': t.direction,
+                'departure_time': t.departure_time.strftime('%H:%M:%S'),
+                'arrival_time': t.arrival_time.strftime('%H:%M:%S') if t.arrival_time else None,
+                'valid_from': t.valid_from.strftime('%Y-%m-%d'),
+                'valid_to': t.valid_to.strftime('%Y-%m-%d') if t.valid_to else None
+            })
+        
+        df = pd.DataFrame(data)
+        csv_path = os.path.join('static', 'downloads', 'timetable.csv')
+        os.makedirs(os.path.dirname(csv_path), exist_ok=True)
+        df.to_csv(csv_path, index=False)
+        
+        return send_file(csv_path, as_attachment=True, download_name='timetable.csv')
+    
+    except Exception as e:
+        flash(f'ダウンロード中にエラーが発生しました: {str(e)}', 'danger')
+        return redirect(url_for('admin.timetable'))
 
-@admin_bp.route('/template', methods=['GET'])
-@jwt_required()
+@bp.route('/timetable/template')
+@login_required
+@admin_required
 def download_template():
-    output = get_csv_template()
-    return send_file(output, mimetype='text/csv', as_attachment=True, download_name='timetable_template.csv')
+    template_path = os.path.join('static', 'templates', 'timetable_template.csv')
+    return send_file(template_path, as_attachment=True, download_name='timetable_template.csv')
 
-@admin_bp.route('/history', methods=['GET'])
-@jwt_required()
-def history():
-    # 履歴管理（例: ExtraTimetableの一覧）
-    extra = ExtraTimetable.query.order_by(ExtraTimetable.special_date.desc()).all()
-    return render_template('admin/history.html', extra=extra)
-
-@admin_bp.route('/user', methods=['GET'])
-@jwt_required()
+@bp.route('/users')
+@login_required
+@admin_required
 def user_list():
-    users = User.query.all()
+    users = User.query.order_by(User.created_at.desc()).all()
     return render_template('admin/user_list.html', users=users)
 
-@admin_bp.route('/delete_all', methods=['GET', 'POST'])
-@jwt_required()
-def delete_all():
-    if request.method == 'POST':
-        ExtraTimetable.query.delete()
-        Timetable.query.delete()
-        User.query.delete()
-        db.session.commit()
-        flash('すべてのデータを削除しました', 'success')
-        return redirect(url_for('admin.timetable'))
-    return render_template('admin/delete_all.html') 
+@bp.route('/users/<int:user_id>/toggle')
+@login_required
+@admin_required
+def toggle_user(user_id):
+    user = User.query.get_or_404(user_id)
+    user.is_active = not user.is_active
+    db.session.commit()
+    flash(f'ユーザー {user.username} の状態を{"有効" if user.is_active else "無効"}に変更しました。', 'success')
+    return redirect(url_for('admin.user_list'))
+
+@bp.route('/users/<int:user_id>/toggle_admin')
+@login_required
+@admin_required
+def toggle_admin(user_id):
+    user = User.query.get_or_404(user_id)
+    user.is_admin = not user.is_admin
+    db.session.commit()
+    flash(f'ユーザー {user.username} の管理者権限を{"付与" if user.is_admin else "削除"}しました。', 'success')
+    return redirect(url_for('admin.user_list')) 

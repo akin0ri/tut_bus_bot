@@ -1,19 +1,66 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2>ユーザー管理</h2>
-<table border="1">
-    <tr>
-        <th>ID</th><th>ユーザー名</th><th>有効</th><th>作成日</th><th>更新日</th>
-    </tr>
-    {% for u in users %}
-    <tr>
-        <td>{{ u.id }}</td>
-        <td>{{ u.username }}</td>
-        <td>{{ '有効' if u.is_active else '無効' }}</td>
-        <td>{{ u.created_at }}</td>
-        <td>{{ u.updated_at }}</td>
-    </tr>
-    {% endfor %}
-</table>
-<a href="{{ url_for('admin.timetable') }}">戻る</a>
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="mb-0">
+                <i class="fas fa-users me-2"></i>ユーザー管理
+            </h2>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>ユーザー名</th>
+                            <th>状態</th>
+                            <th>管理者</th>
+                            <th>作成日</th>
+                            <th>更新日</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>
+                                <span class="badge {% if user.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ '有効' if user.is_active else '無効' }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge {% if user.is_admin %}bg-primary{% else %}bg-secondary{% endif %}">
+                                    {{ '管理者' if user.is_admin else '一般' }}
+                                </span>
+                            </td>
+                            <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ user.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{{ url_for('admin.toggle_user', user_id=user.id) }}" 
+                                       class="btn btn-sm btn-outline-warning"
+                                       onclick="return confirm('ユーザーの状態を変更しますか？');">
+                                        <i class="fas fa-power-off"></i>
+                                    </a>
+                                    <a href="{{ url_for('admin.toggle_admin', user_id=user.id) }}" 
+                                       class="btn btn-sm btn-outline-info"
+                                       onclick="return confirm('管理者権限を変更しますか？');">
+                                        <i class="fas fa-user-shield"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %} 
