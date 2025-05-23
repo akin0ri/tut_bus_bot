@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 *.so
 .Python
+env/
 build/
 develop-eggs/
 dist/
@@ -24,10 +25,11 @@ wheels/
 instance/
 .webassets-cache
 *.db
+*.sqlite
+*.sqlite3
 
 # Virtual Environment
 venv/
-env/
 ENV/
 
 # IDE
@@ -35,7 +37,34 @@ ENV/
 .vscode/
 *.swp
 *.swo
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Application specific
+instance/timetable.db
+instance/*.db
+*.log
+.env
+.env.*
+!.env.example
+
+# Uploaded files
+uploads/
+static/uploads/
+
+# Cache
+.cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
 
 # Environment variables
 .env
