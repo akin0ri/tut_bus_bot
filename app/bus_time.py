@@ -1,12 +1,10 @@
 import csv
 from datetime import datetime, timedelta, timezone
 
-def get_hachioji_bus_times(isWeekdays, now_date, direction, extraordinary=0):
+def get_hachioji_bus_times(isWeekdays, now_date, direction, extraordinary=0, is_saturday=False):
     next_bus_times = []
     isShuttle = False
     shuttle_distance = None
-    
-    print(extraordinary, type(extraordinary))
     
     if extraordinary == 1:
         weekdays_file = "/workspace/extraordinary_time_table/1/hachioji.csv"
@@ -18,12 +16,15 @@ def get_hachioji_bus_times(isWeekdays, now_date, direction, extraordinary=0):
         weekdays_file = "/workspace/extraordinary_time_table/3/hachioji.csv"
         holiday_file = "/workspace/extraordinary_time_table/3/hachioji.csv"
     else:
-        weekdays_file = "/workspace/app/latest_time_table/hachioji_weekdays.csv"
+        if is_saturday:
+            weekdays_file = "/workspace/app/latest_time_table/hachioji_saturday.csv"
+        else:
+            weekdays_file = "/workspace/app/latest_time_table/hachioji_weekdays.csv"
         holiday_file = "/workspace/app/latest_time_table/hachioji_holiday.csv"
     
     print(weekdays_file)
 
-    if isWeekdays:
+    if isWeekdays or is_saturday:
         with open(weekdays_file, "r") as f:
             reader = csv.reader(f)
             before_row = next(reader)
@@ -75,7 +76,7 @@ def get_hachioji_bus_times(isWeekdays, now_date, direction, extraordinary=0):
 
     return isShuttle, next_bus_times, shuttle_distance
 
-def get_minamino_bus_times(isWeekdays, now_date, direction, extraordinary=0):
+def get_minamino_bus_times(isWeekdays, now_date, direction, extraordinary=0, is_saturday=False):
     next_bus_times = []
     isShuttle = False
     shuttle_distance = None
@@ -90,11 +91,13 @@ def get_minamino_bus_times(isWeekdays, now_date, direction, extraordinary=0):
         weekdays_file = "/workspace/extraordinary_time_table/3/minamino.csv"
         holiday_file = "/workspace/extraordinary_time_table/3/minamino.csv"
     else:
-        weekdays_file = "/workspace/app/latest_time_table/minamino_weekdays.csv"
+        if is_saturday:
+            weekdays_file = "/workspace/app/latest_time_table/minamino_saturday.csv"
+        else:
+            weekdays_file = "/workspace/app/latest_time_table/minamino_weekdays.csv"
         holiday_file = "/workspace/app/latest_time_table/minamino_holiday.csv"
 
-
-    if isWeekdays:
+    if isWeekdays or is_saturday:
         with open(weekdays_file, "r") as f:
             reader = csv.reader(f)
             before_row = next(reader)
@@ -146,7 +149,7 @@ def get_minamino_bus_times(isWeekdays, now_date, direction, extraordinary=0):
 
     return isShuttle, next_bus_times, shuttle_distance
 
-def get_dormitory_bus_times(isWeekdays, now_date, direction, extraordinary=0):
+def get_dormitory_bus_times(isWeekdays, now_date, direction, extraordinary=0, is_saturday=False):
     next_bus_times = []
     isShuttle = False
     shuttle_distance = None
@@ -158,9 +161,12 @@ def get_dormitory_bus_times(isWeekdays, now_date, direction, extraordinary=0):
     elif extraordinary == 3:
         weekdays_file = "/workspace/extraordinary_time_table/3/dormitory.csv"
     else:
-        weekdays_file = "/workspace/app/latest_time_table/dormitory_weekdays.csv"
+        if is_saturday:
+            weekdays_file = "/workspace/app/latest_time_table/dormitory_saturday.csv"
+        else:
+            weekdays_file = "/workspace/app/latest_time_table/dormitory_weekdays.csv"
 
-    if isWeekdays:
+    if isWeekdays or is_saturday:
         with open(weekdays_file, "r") as f:
             reader = csv.reader(f)
             try:
@@ -223,8 +229,8 @@ def format_timetable(timetable, now_date, bus_type, direction, isShuttle, shuttl
 # direction: "up":1 or "down":0
 def get_last_5_bus_times(bus_type : str, direction : int):
     now_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
-    # now_date = datetime(2024, 10, 13, 13, 30, 0, 0, tzinfo=timezone(timedelta(hours=+9), 'JST'))
     isWeekdays = now_date.weekday() < 5
+    isSaturday = now_date.weekday() == 5
 
     # extraordinary setting start
     # extraordinary = 1 に該当する日付を設定
@@ -254,26 +260,30 @@ def get_last_5_bus_times(bus_type : str, direction : int):
     else:
         extraordinary = 0
     
-    # 紅華祭終了後戻す
-    # if (extraordinary == 0 and now_date.weekday() == 7) or (extraordinary == 2 and now_date.weekday() == 7):
-    #     return "本日は運行していません．"
-    
     if bus_type == "hachioji":
-        isShuttle, timetable, shuttle_distance = get_hachioji_bus_times(isWeekdays, now_date, direction, extraordinary)
+        if isSaturday and extraordinary == 0:
+            isShuttle, timetable, shuttle_distance = get_hachioji_bus_times(False, now_date, direction, extraordinary, is_saturday=True)
+        else:
+            isShuttle, timetable, shuttle_distance = get_hachioji_bus_times(isWeekdays, now_date, direction, extraordinary)
     elif bus_type == "minamino":
-        isShuttle, timetable, shuttle_distance = get_minamino_bus_times(isWeekdays, now_date, direction, extraordinary)
+        if isSaturday and extraordinary == 0:
+            isShuttle, timetable, shuttle_distance = get_minamino_bus_times(False, now_date, direction, extraordinary, is_saturday=True)
+        else:
+            isShuttle, timetable, shuttle_distance = get_minamino_bus_times(isWeekdays, now_date, direction, extraordinary)
     elif bus_type == "dormitory":
-        isShuttle, timetable, shuttle_distance = get_dormitory_bus_times(isWeekdays, now_date, direction, extraordinary)
+        if isSaturday and extraordinary == 0:
+            isShuttle, timetable, shuttle_distance = get_dormitory_bus_times(False, now_date, direction, extraordinary, is_saturday=True)
+        else:
+            isShuttle, timetable, shuttle_distance = get_dormitory_bus_times(isWeekdays, now_date, direction, extraordinary)
     else:
         isShuttle, timetable, shuttle_distance = ["error"]
-        
         
     if len(timetable) == 0:
         return "本日の運行は終了しました。"
     if now_date.weekday() == 6 and extraordinary == 0:
         return "本日は運行していません。"
     
-    return format_timetable(timetable,now_date , bus_type, direction, isShuttle, shuttle_distance)
+    return format_timetable(timetable, now_date, bus_type, direction, isShuttle, shuttle_distance)
 
 
 
