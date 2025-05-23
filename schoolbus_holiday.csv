@@ -1,2 +1,2 @@
 route,direction,departure_time,arrival_time,is_shuttle,shuttle_start,shuttle_end,valid_from,valid_to,remarks
-運休,0,00:00:00,23:59:59,0,,,2024-04-01,,,日曜日・祝日は終日運休 
+運休,0,00:00:00,23:59:59,0,,,2024-04-07,2024-07-25,日曜日・祝日は終日運休 
