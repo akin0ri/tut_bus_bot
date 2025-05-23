@@ -15,22 +15,19 @@ from app.bus_status import get_bus_status
 from app.bus_time import get_last_5_bus_times
 from app.food_status import get_food_status
 from .blueprints.main_routes import main_blueprint
+from .config import Config
 
 db = SQLAlchemy()
 migrate = Migrate()
 jwt = JWTManager()
 
-def create_app():
+def create_app(config_class=Config):
     load_dotenv()
     app = Flask(__name__)
-    app.config.from_object("app.config.Config")
-    # 環境変数 'SECRET_KEY' の検証
-    secret_key = os.getenv('SECRET_KEY')
-    if not secret_key:
-        app.logger.error("SECRET_KEY が環境変数に設定されていません")
-        raise Exception("SECRET_KEY が設定されていません")
-    app.config['SECRET_KEY'] = secret_key
-    app.logger.info(f"SECRET_KEY: {secret_key}")
+    app.config.from_object(config_class)
+
+    # SECRET_KEYの表示
+    print(f"現在使用中のSECRET_KEY: {app.config['SECRET_KEY']}")
 
     db.init_app(app)
     migrate.init_app(app, db)

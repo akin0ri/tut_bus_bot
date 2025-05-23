@@ -59,7 +59,7 @@ flask db upgrade
 
 4. 開発サーバ起動
 ```sh
-flask run
+flask run --host=0.0.0.0 --port=5050
 ```
 
 ---

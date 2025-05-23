@@ -3,7 +3,6 @@ from flask import render_template, redirect, url_for, request, flash, send_file,
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models.timetable import Timetable, ExtraTimetable
 from app.models.user import User
-from app.models.user import SecretKey
 from app import db
 from app.schemas.timetable import TimetableSchema
 from app.schemas.extra_timetable import ExtraTimetableSchema
@@ -111,7 +110,6 @@ def delete_all():
     if request.method == 'POST':
         ExtraTimetable.query.delete()
         Timetable.query.delete()
-        SecretKey.query.delete()
         User.query.delete()
         db.session.commit()
         flash('すべてのデータを削除しました', 'success')
