@@ -13,7 +13,6 @@ from linebot.v3.messaging import Configuration, ApiClient, MessagingApi, ReplyMe
 from linebot.v3.webhooks import MessageEvent, TextMessageContent
 
 from app.bus_status import get_bus_status
-from app.bus_time import get_last_5_bus_times
 from app.food_status import get_food_status
 from .config import Config
 

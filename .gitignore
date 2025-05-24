@@ -1,6 +1,7 @@
 # Python
 **/__pycache__/
 **/__pycache__/**
+app/__pycache__/**
 *.py[cod]
 *$py.class
 *.so
@@ -99,3 +100,4 @@ HttpTrigger/function.json
 infra/.terraform/
 *.tfstate
 *.tfstate.backup
+./app/__pycache__/**

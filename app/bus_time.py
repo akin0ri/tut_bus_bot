@@ -1,7 +1,5 @@
 import csv
 from datetime import datetime, timedelta, timezone
-from app import db
-from app.models.timetable import Timetable
 
 def get_hachioji_bus_times(isWeekdays, now_date, direction, extraordinary=0, is_saturday=False):
     next_bus_times = []
@@ -230,6 +228,9 @@ def format_timetable(timetable, now_date, bus_type, direction, isShuttle, shuttl
 # bus_type: "八王子" or "南野" or "蒲田"
 # direction: 0 or 1
 def get_last_5_bus_times(bus_type: str, direction: int):
+    from app import db
+    from app.models.timetable import Timetable
+    
     now_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
     isWeekdays = now_date.weekday() < 5
     isSaturday = now_date.weekday() == 5
