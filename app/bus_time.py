@@ -1,5 +1,7 @@
 import csv
 from datetime import datetime, timedelta, timezone
+from app import db
+from app.models.timetable import Timetable
 
 def get_hachioji_bus_times(isWeekdays, now_date, direction, extraordinary=0, is_saturday=False):
     next_bus_times = []
@@ -227,65 +229,47 @@ def format_timetable(timetable, now_date, bus_type, direction, isShuttle, shuttl
 
 # bus_type: "八王子" or "南野" or "蒲田"
 # direction: 0 or 1
-def get_last_5_bus_times(bus_type : str, direction : int):
+def get_last_5_bus_times(bus_type: str, direction: int):
     now_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
     isWeekdays = now_date.weekday() < 5
     isSaturday = now_date.weekday() == 5
 
-    # extraordinary setting start
-    # extraordinary = 1 に該当する日付を設定
-    extraordinary_1_dates = [
-        datetime(2024, 10, 12, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 10, 15, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
-    ]
+    # 現在の日付に有効な時刻表を取得
+    query = Timetable.query.filter(
+        Timetable.route == bus_type,
+        Timetable.direction == direction,
+        Timetable.valid_from <= now_date.date(),
+        (Timetable.valid_to >= now_date.date()) | (Timetable.valid_to == None)
+    ).order_by(Timetable.departure_time)
 
-    # extraordinary = 2 に該当する日付を設定
-    extraordinary_2_dates = [
-        datetime(2024, 10, 13, tzinfo=timezone(timedelta(hours=+9), 'JST')).date(),
-        datetime(2024, 10, 14, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
-    ]
+    # 現在時刻以降のバスを取得
+    next_bus_times = []
+    isShuttle = False
+    shuttle_distance = None
 
-    # extraordinary = 3 に該当する日付を設定
-    extraordinary_3_dates = [
-        datetime(2024, 10, 16, tzinfo=timezone(timedelta(hours=+9), 'JST')).date()
-    ]
+    for timetable in query:
+        departure_time = datetime.combine(now_date.date(), timetable.departure_time)
+        if departure_time > now_date:
+            if timetable.is_shuttle:
+                isShuttle = True
+                shuttle_distance = [
+                    timetable.shuttle_start.strftime('%H:%M'),
+                    timetable.shuttle_end.strftime('%H:%M')
+                ]
+            else:
+                next_bus_times.append([
+                    timetable.departure_time.strftime('%H:%M'),
+                    timetable.arrival_time.strftime('%H:%M') if timetable.arrival_time else ''
+                ])
+            if len(next_bus_times) >= 5:
+                break
 
-    # extraordinary の値を設定
-    if now_date.date() in extraordinary_1_dates:
-        extraordinary = 1
-    elif now_date.date() in extraordinary_2_dates:
-        extraordinary = 2
-    elif now_date.date() in extraordinary_3_dates:
-        extraordinary = 3
-    else:
-        extraordinary = 0
-    
-    if bus_type == "八王子":
-        if isSaturday and extraordinary == 0:
-            isShuttle, timetable, shuttle_distance = get_hachioji_bus_times(False, now_date, direction, extraordinary, is_saturday=True)
-        else:
-            isShuttle, timetable, shuttle_distance = get_hachioji_bus_times(isWeekdays, now_date, direction, extraordinary)
-    elif bus_type == "南野":
-        if isSaturday and extraordinary == 0:
-            isShuttle, timetable, shuttle_distance = get_minamino_bus_times(False, now_date, direction, extraordinary, is_saturday=True)
-        else:
-            isShuttle, timetable, shuttle_distance = get_minamino_bus_times(isWeekdays, now_date, direction, extraordinary)
-    elif bus_type == "蒲田":
-        if isSaturday and extraordinary == 0:
-            isShuttle, timetable, shuttle_distance = get_dormitory_bus_times(False, now_date, direction, extraordinary, is_saturday=True)
-        else:
-            isShuttle, timetable, shuttle_distance = get_dormitory_bus_times(isWeekdays, now_date, direction, extraordinary)
-    else:
-        isShuttle, timetable, shuttle_distance = ["error"]
-        
-    if len(timetable) == 0:
+    if len(next_bus_times) == 0:
         return "本日の運行は終了しました。"
-    if now_date.weekday() == 6 and extraordinary == 0:
+    if now_date.weekday() == 6:
         return "本日は運行していません。"
     
-    return format_timetable(timetable, now_date, bus_type, direction, isShuttle, shuttle_distance)
-
-
+    return format_timetable(next_bus_times, now_date, bus_type, direction, isShuttle, shuttle_distance)
 
 # For debugging purposes
 if __name__ == "__main__":
