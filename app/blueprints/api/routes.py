@@ -47,6 +47,7 @@ def handle_message(event):
             else:
                 try:
                     bustype, direction = event.message.text.split("_")
+                    print(bustype, direction)
                     # 路線名の英語表記を漢字に変換
                     route_map = {
                         "hachioji": "八王子",
