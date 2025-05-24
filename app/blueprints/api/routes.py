@@ -47,6 +47,7 @@ def handle_message(event):
             else:
                 try:
                     bustype, direction = event.message.text.split("_")
+                    current_app.logger.info(f"受信したコマンド: bustype={bustype}, direction={direction}")
                     # 路線名の英語表記を漢字に変換
                     route_map = {
                         "hachioji": "八王子",
@@ -61,6 +62,7 @@ def handle_message(event):
                         # minamino_1: 八王子みなみ野駅 -> 大学
                         reply_text = get_last_5_bus_times(route_map[bustype], int(direction))
                     else:
+                        current_app.logger.warning(f"不正な路線名: {bustype}")
                         reply_text = "コマンドが不正です。\n\n使用可能なコマンド:\n" + \
                                    "1. 運行予定\n" + \
                                    "2. 問い合わせ\n" + \
@@ -71,7 +73,20 @@ def handle_message(event):
                                    "   - minamino_1: 八王子みなみ野駅 -> 大学\n" + \
                                    "   - kamata_0: 大学 -> 蒲田駅\n" + \
                                    "   - kamata_1: 蒲田駅 -> 大学"
-                except Exception:
+                except ValueError as ve:
+                    current_app.logger.error(f"コマンド形式エラー: {str(ve)}")
+                    reply_text = "コマンドが不正です。\n\n使用可能なコマンド:\n" + \
+                               "1. 運行予定\n" + \
+                               "2. 問い合わせ\n" + \
+                               "3. 時刻表確認:\n" + \
+                               "   - hachioji_0: 大学 -> 八王子駅\n" + \
+                               "   - hachioji_1: 八王子駅 -> 大学\n" + \
+                               "   - minamino_0: 大学 -> 八王子みなみ野駅\n" + \
+                               "   - minamino_1: 八王子みなみ野駅 -> 大学\n" + \
+                               "   - kamata_0: 大学 -> 蒲田駅\n" + \
+                               "   - kamata_1: 蒲田駅 -> 大学"
+                except Exception as e:
+                    current_app.logger.error(f"予期せぬエラー: {str(e)}")
                     reply_text = "コマンドが不正です。\n\n使用可能なコマンド:\n" + \
                                "1. 運行予定\n" + \
                                "2. 問い合わせ\n" + \
