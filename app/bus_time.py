@@ -225,8 +225,8 @@ def format_timetable(timetable, now_date, bus_type, direction, isShuttle, shuttl
 
     return text
 
-# bus_type: "hachioji" or "minamino" or "dormitory"
-# direction: "up":1 or "down":0
+# bus_type: "八王子" or "南野" or "蒲田"
+# direction: 0 or 1
 def get_last_5_bus_times(bus_type : str, direction : int):
     now_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
     isWeekdays = now_date.weekday() < 5
@@ -260,17 +260,17 @@ def get_last_5_bus_times(bus_type : str, direction : int):
     else:
         extraordinary = 0
     
-    if bus_type == "hachioji":
+    if bus_type == "八王子":
         if isSaturday and extraordinary == 0:
             isShuttle, timetable, shuttle_distance = get_hachioji_bus_times(False, now_date, direction, extraordinary, is_saturday=True)
         else:
             isShuttle, timetable, shuttle_distance = get_hachioji_bus_times(isWeekdays, now_date, direction, extraordinary)
-    elif bus_type == "minamino":
+    elif bus_type == "南野":
         if isSaturday and extraordinary == 0:
             isShuttle, timetable, shuttle_distance = get_minamino_bus_times(False, now_date, direction, extraordinary, is_saturday=True)
         else:
             isShuttle, timetable, shuttle_distance = get_minamino_bus_times(isWeekdays, now_date, direction, extraordinary)
-    elif bus_type == "dormitory":
+    elif bus_type == "蒲田":
         if isSaturday and extraordinary == 0:
             isShuttle, timetable, shuttle_distance = get_dormitory_bus_times(False, now_date, direction, extraordinary, is_saturday=True)
         else:
