@@ -54,7 +54,12 @@ def handle_message(event):
                         "kamata": "蒲田"
                     }
                     if bustype in route_map:
-                        reply_text = get_last_5_bus_times(route_map[bustype], int(direction)+1)
+                        # directionの定義:
+                        # hachioji_0: 大学 -> 八王子駅
+                        # hachioji_1: 八王子駅 -> 大学
+                        # minamino_0: 大学 -> 八王子みなみ野駅
+                        # minamino_1: 八王子みなみ野駅 -> 大学
+                        reply_text = get_last_5_bus_times(route_map[bustype], int(direction))
                     else:
                         reply_text = "コマンドが不正です。\n使用可能な路線: hachioji, minamino, kamata"
                 except Exception:

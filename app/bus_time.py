@@ -192,21 +192,21 @@ def get_dormitory_bus_times(isWeekdays, now_date, direction, extraordinary=0, is
 def format_timetable(timetable, now_date, bus_type, direction, isShuttle, shuttle_distance):
     text = f"【バス運行情報 {now_date.strftime('%H:%M:%S')}現在】\n"
 
-    if bus_type == "hachioji":
-        if direction == 1:
+    if bus_type == "八王子":
+        if direction == 0:
             text += "大学発 八王子駅行\n"
         else:
             text += "八王子駅発 大学行\n"
-    elif bus_type == "minamino":
-        if direction == 1:
-            text += "大学発 みなみ野駅行\n"
+    elif bus_type == "南野":
+        if direction == 0:
+            text += "大学発 八王子みなみ野駅行\n"
         else:
-            text += "みなみ野駅発 大学行\n"
-    elif bus_type == "dormitory":
-        if direction == 1:
-            text += "大学発 学生寮行\n"
+            text += "八王子みなみ野駅発 大学行\n"
+    elif bus_type == "蒲田":
+        if direction == 0:
+            text += "大学発 蒲田駅行\n"
         else:
-            text += "学生寮発 大学行\n"
+            text += "蒲田駅発 大学行\n"
     text += "\n"
 
     if isShuttle:
