@@ -47,9 +47,18 @@ def handle_message(event):
             else:
                 try:
                     bustype, direction = event.message.text.split("_")
-                    reply_text = get_last_5_bus_times(bustype, int(direction)+1)
+                    # 路線名の英語表記を漢字に変換
+                    route_map = {
+                        "hachioji": "八王子",
+                        "minamino": "南野",
+                        "kamata": "蒲田"
+                    }
+                    if bustype in route_map:
+                        reply_text = get_last_5_bus_times(route_map[bustype], int(direction)+1)
+                    else:
+                        reply_text = "コマンドが不正です。\n使用可能な路線: hachioji, minamino, kamata"
                 except Exception:
-                    reply_text = "コマンドが不正です。"
+                    reply_text = "コマンドが不正です。\n使用可能な路線: hachioji, minamino, kamata"
             line_bot_api.reply_message_with_http_info(
                 ReplyMessageRequest(
                     reply_token=event.reply_token,
