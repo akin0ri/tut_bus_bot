@@ -1,9 +1,96 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
 {% block content %}
-<h2>CSVアップロード</h2>
-<form method="post" enctype="multipart/form-data">
-    <input type="file" name="file" accept=".csv" required>
-    <button type="submit">アップロード</button>
-</form>
-<a href="{{ url_for('admin.timetable') }}">戻る</a>
+<div class="container mt-4">
+    <h2>時刻表アップロード</h2>
+    
+    <div class="card mt-4">
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="file" class="form-label">CSVファイル</label>
+                    <input type="file" class="form-control" id="file" name="file" accept=".csv" required>
+                    <div class="form-text">
+                        CSVファイルは以下の形式である必要があります：<br>
+                        路線,方向,種類,出発時刻,到着時刻,シャトル運行,シャトル開始,シャトル終了,適用開始日,適用終了日
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">アップロード</button>
+                    <a href="{{ url_for('admin.timetable') }}" class="btn btn-secondary">キャンセル</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">CSVファイルの形式</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>項目</th>
+                        <th>説明</th>
+                        <th>例</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>路線</td>
+                        <td>路線名（日本語）</td>
+                        <td>大学駅線</td>
+                    </tr>
+                    <tr>
+                        <td>方向</td>
+                        <td>大学発または駅発</td>
+                        <td>大学発</td>
+                    </tr>
+                    <tr>
+                        <td>種類</td>
+                        <td>通常平日、通常土曜日、特別日</td>
+                        <td>通常平日</td>
+                    </tr>
+                    <tr>
+                        <td>出発時刻</td>
+                        <td>HH:MM形式</td>
+                        <td>08:00</td>
+                    </tr>
+                    <tr>
+                        <td>到着時刻</td>
+                        <td>HH:MM形式（終点の場合は空欄）</td>
+                        <td>08:15</td>
+                    </tr>
+                    <tr>
+                        <td>シャトル運行</td>
+                        <td>はいまたはいいえ</td>
+                        <td>はい</td>
+                    </tr>
+                    <tr>
+                        <td>シャトル開始</td>
+                        <td>HH:MM形式（シャトル運行が「はい」の場合のみ）</td>
+                        <td>08:00</td>
+                    </tr>
+                    <tr>
+                        <td>シャトル終了</td>
+                        <td>HH:MM形式（シャトル運行が「はい」の場合のみ）</td>
+                        <td>08:30</td>
+                    </tr>
+                    <tr>
+                        <td>適用開始日</td>
+                        <td>YYYY-MM-DD形式</td>
+                        <td>2024-04-01</td>
+                    </tr>
+                    <tr>
+                        <td>適用終了日</td>
+                        <td>YYYY-MM-DD形式（無期限の場合は空欄）</td>
+                        <td>2024-09-30</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %} 

@@ -1,50 +1,99 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h2 class="mb-0">
-                    <i class="fas fa-edit me-2"></i>時刻表編集
-                </h2>
+<div class="container mt-4">
+    <h2>時刻表編集</h2>
+    
+    <form method="POST" class="mt-4">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="route" class="form-label">路線</label>
+                    <select class="form-select" id="route" name="route" required>
+                        <option value="">選択してください</option>
+                        <option value="univ_sta" {% if timetable.route == 'univ_sta' %}selected{% endif %}>大学駅線</option>
+                        <option value="univ_eki" {% if timetable.route == 'univ_eki' %}selected{% endif %}>大学駅線</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="direction" class="form-label">方向</label>
+                    <select class="form-select" id="direction" name="direction" required>
+                        <option value="0" {% if timetable.direction == 0 %}selected{% endif %}>大学発</option>
+                        <option value="1" {% if timetable.direction == 1 %}selected{% endif %}>駅発</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="timetable_type" class="form-label">時刻表の種類</label>
+                    <select class="form-select" id="timetable_type" name="timetable_type" required>
+                        <option value="1" {% if timetable.timetable_type == 1 %}selected{% endif %}>通常平日</option>
+                        <option value="2" {% if timetable.timetable_type == 2 %}selected{% endif %}>通常土曜日</option>
+                        <option value="3" {% if timetable.timetable_type == 3 %}selected{% endif %}>特別日</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="departure_time" class="form-label">出発時刻</label>
+                    <input type="time" class="form-control" id="departure_time" name="departure_time" 
+                           value="{{ timetable.departure_time.strftime('%H:%M') }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="arrival_time" class="form-label">到着時刻</label>
+                    <input type="time" class="form-control" id="arrival_time" name="arrival_time" 
+                           value="{{ timetable.arrival_time.strftime('%H:%M') if timetable.arrival_time else '' }}">
+                    <div class="form-text">終点の場合は空欄にしてください</div>
+                </div>
             </div>
-            <div class="card-body">
-                <form method="post">
-                    <div class="mb-3">
-                        <label class="form-label">路線</label>
-                        <input type="text" name="route" class="form-control" value="{{ timetable.route }}" required>
+
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="is_shuttle" name="is_shuttle" 
+                               {% if timetable.is_shuttle %}checked{% endif %}>
+                        <label class="form-check-label" for="is_shuttle">シャトル運行</label>
                     </div>
+                </div>
+
+                <div id="shuttle_times" class="mb-3" {% if not timetable.is_shuttle %}style="display: none;"{% endif %}>
                     <div class="mb-3">
-                        <label class="form-label">方向</label>
-                        <input type="number" name="direction" class="form-control" value="{{ timetable.direction }}" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">出発時刻</label>
-                        <input type="time" name="departure_time" class="form-control" value="{{ timetable.departure_time }}" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">到着時刻</label>
-                        <input type="time" name="arrival_time" class="form-control" value="{{ timetable.arrival_time }}">
+                        <label for="shuttle_start" class="form-label">シャトル開始時刻</label>
+                        <input type="time" class="form-control" id="shuttle_start" name="shuttle_start" 
+                               value="{{ timetable.shuttle_start.strftime('%H:%M') if timetable.shuttle_start else '' }}">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">適用開始日</label>
-                        <input type="date" name="valid_from" class="form-control" value="{{ timetable.valid_from }}" required>
+                        <label for="shuttle_end" class="form-label">シャトル終了時刻</label>
+                        <input type="time" class="form-control" id="shuttle_end" name="shuttle_end" 
+                               value="{{ timetable.shuttle_end.strftime('%H:%M') if timetable.shuttle_end else '' }}">
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">適用終了日</label>
-                        <input type="date" name="valid_to" class="form-control" value="{{ timetable.valid_to }}">
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <a href="{{ url_for('admin.timetable') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left me-1"></i>戻る
-                        </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-1"></i>更新
-                        </button>
-                    </div>
-                </form>
+                </div>
+
+                <div class="mb-3">
+                    <label for="valid_from" class="form-label">適用開始日</label>
+                    <input type="date" class="form-control" id="valid_from" name="valid_from" 
+                           value="{{ timetable.valid_from.strftime('%Y-%m-%d') }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="valid_to" class="form-label">適用終了日</label>
+                    <input type="date" class="form-control" id="valid_to" name="valid_to" 
+                           value="{{ timetable.valid_to.strftime('%Y-%m-%d') if timetable.valid_to else '' }}">
+                    <div class="form-text">無期限の場合は空欄にしてください</div>
+                </div>
             </div>
         </div>
-    </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">保存</button>
+            <a href="{{ url_for('admin.timetable') }}" class="btn btn-secondary">キャンセル</a>
+        </div>
+    </form>
 </div>
+
+<script>
+document.getElementById('is_shuttle').addEventListener('change', function() {
+    document.getElementById('shuttle_times').style.display = this.checked ? 'block' : 'none';
+});
+</script>
 {% endblock %} 

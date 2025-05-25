@@ -101,3 +101,5 @@ infra/.terraform/
 *.tfstate
 *.tfstate.backup
 ./app/__pycache__/**
+
+./instance/timetable.db

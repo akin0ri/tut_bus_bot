@@ -1,73 +1,120 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="row mb-4">
-    <div class="col">
-        <h2 class="mb-4">
-            <i class="fas fa-clock me-2"></i>時刻表一覧
-        </h2>
-    </div>
-    <div class="col-auto">
-        <div class="btn-group">
-            <a href="{{ url_for('admin.add_timetable') }}" class="btn btn-primary">
-                <i class="fas fa-plus me-1"></i>新規追加
-            </a>
-            <a href="{{ url_for('admin.download') }}" class="btn btn-success">
-                <i class="fas fa-download me-1"></i>CSVダウンロード
-            </a>
-            <a href="{{ url_for('admin.download_template') }}" class="btn btn-info">
-                <i class="fas fa-file-download me-1"></i>テンプレート
-            </a>
-            <a href="{{ url_for('admin.upload') }}" class="btn btn-warning">
-                <i class="fas fa-upload me-1"></i>CSVアップロード
-            </a>
+<div class="container mt-4">
+    <h2>時刻表一覧</h2>
+    
+    <!-- フィルター -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="btn-group" role="group">
+                <a href="{{ url_for('admin.timetable') }}" class="btn btn-outline-primary {% if not timetable_type %}active{% endif %}">すべて</a>
+                <a href="{{ url_for('admin.timetable', timetable_type=1) }}" class="btn btn-outline-primary {% if timetable_type == 1 %}active{% endif %}">通常平日</a>
+                <a href="{{ url_for('admin.timetable', timetable_type=2) }}" class="btn btn-outline-primary {% if timetable_type == 2 %}active{% endif %}">通常土曜日</a>
+                <a href="{{ url_for('admin.timetable', timetable_type=3) }}" class="btn btn-outline-primary {% if timetable_type == 3 %}active{% endif %}">特別日</a>
+            </div>
         </div>
+        <div class="col text-end">
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAllModal">
+                全データ削除
+            </button>
+            <a href="{{ url_for('admin.add_timetable') }}" class="btn btn-primary">新規追加</a>
+        </div>
+    </div>
+
+    <!-- 時刻表一覧 -->
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>路線</th>
+                    <th>方向</th>
+                    <th>種類</th>
+                    <th>出発時刻</th>
+                    <th>到着時刻</th>
+                    <th>シャトル運行</th>
+                    <th>有効期間</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for timetable in timetables %}
+                <tr>
+                    <td>{{ timetable.route_japanese }}</td>
+                    <td>{{ "大学発" if timetable.direction == 0 else "駅発" }}</td>
+                    <td>{{ timetable.timetable_type_name }}</td>
+                    <td>{{ timetable.departure_time.strftime('%H:%M') }}</td>
+                    <td>{{ timetable.arrival_time.strftime('%H:%M') if timetable.arrival_time else '終点' }}</td>
+                    <td>
+                        {% if timetable.is_shuttle %}
+                        {{ timetable.shuttle_start.strftime('%H:%M') }} - {{ timetable.shuttle_end.strftime('%H:%M') }}
+                        {% else %}
+                        通常運行
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ timetable.valid_from.strftime('%Y/%m/%d') }} ～
+                        {% if timetable.valid_to %}
+                        {{ timetable.valid_to.strftime('%Y/%m/%d') }}
+                        {% else %}
+                        無期限
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('admin.edit_timetable', id=timetable.id) }}" class="btn btn-sm btn-primary">編集</a>
+                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ timetable.id }}">
+                            削除
+                        </button>
+                    </td>
+                </tr>
+
+                <!-- 削除確認モーダル -->
+                <div class="modal fade" id="deleteModal{{ timetable.id }}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">削除確認</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>この時刻表を削除してもよろしいですか？</p>
+                                <p>
+                                    {{ timetable.route_japanese }} {{ "大学発" if timetable.direction == 0 else "駅発" }}
+                                    {{ timetable.departure_time.strftime('%H:%M') }}
+                                </p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                                <form action="{{ url_for('admin.delete_timetable', id=timetable.id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-danger">削除</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 
-<div class="card">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>路線</th>
-                        <th>方向</th>
-                        <th>出発</th>
-                        <th>到着</th>
-                        <th>適用開始</th>
-                        <th>適用終了</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for t in timetables %}
-                    <tr>
-                        <td>{{ t.id }}</td>
-                        <td>{{ t.route }}</td>
-                        <td>{{ t.direction }}</td>
-                        <td>{{ t.departure_time }}</td>
-                        <td>{{ t.arrival_time }}</td>
-                        <td>{{ t.valid_from }}</td>
-                        <td>{{ t.valid_to }}</td>
-                        <td>
-                            <div class="btn-group">
-                                <a href="{{ url_for('admin.edit_timetable', timetable_id=t.id) }}" 
-                                   class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <form method="post" action="{{ url_for('admin.delete_timetable', timetable_id=t.id) }}" 
-                                      style="display:inline;" onsubmit="return confirm('本当に削除しますか？');">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<!-- 全削除確認モーダル -->
+<div class="modal fade" id="deleteAllModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">全データ削除確認</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-danger">警告: この操作は取り消せません。</p>
+                <p>すべての時刻表データを削除してもよろしいですか？</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                <form action="{{ url_for('admin.delete_all_timetables') }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-danger">全データ削除</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>

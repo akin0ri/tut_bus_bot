@@ -195,6 +195,11 @@ def get_dormitory_bus_times(isWeekdays, now_date, direction, extraordinary=0, is
 def get_bus_times_from_db(bus_type: str, direction: int, now_date: datetime):
     """
     データベースから時刻表データを取得する関数
+    
+    Args:
+        bus_type (str): バス路線名（"八王子", "南野", "蒲田"）
+        direction (int): 方向（0: 大学発, 1: 駅発）
+        now_date (datetime): 現在時刻
     """
     from app import db
     from app.models.timetable import Timetable
@@ -202,10 +207,33 @@ def get_bus_times_from_db(bus_type: str, direction: int, now_date: datetime):
     logger.info(f"時刻表データ取得開始: 路線={bus_type}, 方向={direction}, 現在時刻={now_date}")
     
     try:
+        # 路線名をローマ字に変換
+        route_map = {
+            "八王子": "hachioji",
+            "南野": "minamino",
+            "蒲田": "kamata"
+        }
+        route = route_map.get(bus_type)
+        if not route:
+            logger.error(f"不正な路線名: {bus_type}")
+            return False, [["error", None]], None
+
+        # 曜日に応じて時刻表の種類を決定
+        weekday = now_date.weekday()
+        if weekday == 5:  # 土曜日
+            timetable_type = 2
+        elif weekday == 6:  # 日曜日
+            timetable_type = 3
+        else:  # 平日
+            timetable_type = 1
+        
+        logger.info(f"時刻表種類: {timetable_type} (weekday: {weekday})")
+        
         # 現在の日付に有効な時刻表を取得
         query = Timetable.query.filter(
-            Timetable.route == bus_type,
+            Timetable.route == route,
             Timetable.direction == direction,
+            Timetable.timetable_type == timetable_type,
             Timetable.valid_from <= now_date.date(),
             (Timetable.valid_to >= now_date.date()) | (Timetable.valid_to == None)
         ).order_by(Timetable.departure_time)
