@@ -148,21 +148,32 @@ def upload():
             reader = csv.DictReader(stream)
             
             for row in reader:
+                # str型変換ガードを追加
+                route = str(row['路線']) if row['路線'] is not None else ''
+                direction = 0 if str(row['方向']) == '大学発' else 1
+                timetable_type = {
+                    '通常平日': 1,
+                    '通常土曜日': 2,
+                    '特別日': 3
+                }[str(row['種類'])]
+                departure_time_str = str(row['出発時刻']) if row['出発時刻'] is not None else ''
+                arrival_time_str = str(row['到着時刻']) if row['到着時刻'] is not None else ''
+                is_shuttle = str(row['シャトル運行']) == 'はい'
+                shuttle_start_str = str(row['シャトル開始']) if row['シャトル開始'] is not None else ''
+                shuttle_end_str = str(row['シャトル終了']) if row['シャトル終了'] is not None else ''
+                valid_from_str = str(row['適用開始日']) if row['適用開始日'] is not None else ''
+                valid_to_str = str(row['適用終了日']) if row['適用終了日'] is not None else ''
                 timetable = Timetable(
-                    route=row['路線'],
-                    direction=0 if row['方向'] == '大学発' else 1,
-                    timetable_type={
-                        '通常平日': 1,
-                        '通常土曜日': 2,
-                        '特別日': 3
-                    }[row['種類']],
-                    departure_time=datetime.strptime(row['出発時刻'], '%H:%M').time(),
-                    arrival_time=datetime.strptime(row['到着時刻'], '%H:%M').time() if row['到着時刻'] else None,
-                    is_shuttle=row['シャトル運行'] == 'はい',
-                    shuttle_start=datetime.strptime(row['シャトル開始'], '%H:%M').time() if row['シャトル開始'] else None,
-                    shuttle_end=datetime.strptime(row['シャトル終了'], '%H:%M').time() if row['シャトル終了'] else None,
-                    valid_from=datetime.strptime(row['適用開始日'], '%Y-%m-%d').date(),
-                    valid_to=datetime.strptime(row['適用終了日'], '%Y-%m-%d').date() if row['適用終了日'] else None
+                    route=route,
+                    direction=direction,
+                    timetable_type=timetable_type,
+                    departure_time=datetime.strptime(departure_time_str, '%H:%M').time() if departure_time_str else None,
+                    arrival_time=datetime.strptime(arrival_time_str, '%H:%M').time() if arrival_time_str else None,
+                    is_shuttle=is_shuttle,
+                    shuttle_start=datetime.strptime(shuttle_start_str, '%H:%M').time() if shuttle_start_str else None,
+                    shuttle_end=datetime.strptime(shuttle_end_str, '%H:%M').time() if shuttle_end_str else None,
+                    valid_from=datetime.strptime(valid_from_str, '%Y-%m-%d').date() if valid_from_str else None,
+                    valid_to=datetime.strptime(valid_to_str, '%Y-%m-%d').date() if valid_to_str else None
                 )
                 db.session.add(timetable)
             

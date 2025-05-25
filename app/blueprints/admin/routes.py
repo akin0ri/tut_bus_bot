@@ -5,7 +5,7 @@ from app import db
 from app.models.timetable import Timetable
 from app.models.user import User
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, date
 import os
 
 def admin_required(f):
@@ -95,14 +95,35 @@ def upload():
                 flash('必要なカラムが不足しています。', 'danger')
                 return redirect(request.url)
             
+            has_timetable_type = 'timetable_type' in df.columns
             for _, row in df.iterrows():
+                route = str(row['route']) if not pd.isna(row['route']) else ''
+                direction = int(row['direction']) if not pd.isna(row['direction']) else 0
+                departure_time_str = str(row['departure_time']) if not pd.isna(row['departure_time']) else ''
+                arrival_time_str = str(row['arrival_time']) if not pd.isna(row['arrival_time']) else ''
+                valid_from_str = str(row['valid_from']) if not pd.isna(row['valid_from']) and str(row['valid_from']) != '' and str(row['valid_from']) != 'nan' else None
+                valid_to_str = str(row['valid_to']) if not pd.isna(row['valid_to']) and str(row['valid_to']) != '' and str(row['valid_to']) != 'nan' else None
+                if has_timetable_type and not pd.isna(row['timetable_type']) and str(row['timetable_type']) != '' and str(row['timetable_type']) != 'nan':
+                    timetable_type = int(row['timetable_type'])
+                else:
+                    timetable_type = 1  # デフォルト値
+
+                # valid_fromが空欄・nanなら今日の日付をセット
+                if not valid_from_str:
+                    valid_from_date = date.today()
+                else:
+                    valid_from_date = datetime.strptime(valid_from_str, '%Y-%m-%d').date()
+
+                valid_to_date = datetime.strptime(valid_to_str, '%Y-%m-%d').date() if valid_to_str else None
+
                 timetable = Timetable(
-                    route=row['route'],
-                    direction=row['direction'],
-                    departure_time=datetime.strptime(row['departure_time'], '%H:%M:%S').time(),
-                    arrival_time=datetime.strptime(row['arrival_time'], '%H:%M:%S').time() if pd.notna(row['arrival_time']) else None,
-                    valid_from=datetime.strptime(row['valid_from'], '%Y-%m-%d').date(),
-                    valid_to=datetime.strptime(row['valid_to'], '%Y-%m-%d').date() if pd.notna(row['valid_to']) else None
+                    route=route,
+                    direction=direction,
+                    timetable_type=timetable_type,
+                    departure_time=datetime.strptime(departure_time_str, '%H:%M:%S').time() if departure_time_str and departure_time_str != 'nan' else None,
+                    arrival_time=datetime.strptime(arrival_time_str, '%H:%M:%S').time() if arrival_time_str and arrival_time_str != 'nan' else None,
+                    valid_from=valid_from_date,
+                    valid_to=valid_to_date
                 )
                 db.session.add(timetable)
             
@@ -177,4 +198,17 @@ def toggle_admin(user_id):
     user.is_admin = not user.is_admin
     db.session.commit()
     flash(f'ユーザー {user.username} の管理者権限を{"付与" if user.is_admin else "削除"}しました。', 'success')
-    return redirect(url_for('admin.user_list')) 
+    return redirect(url_for('admin.user_list'))
+
+@bp.route('/timetable/<int:timetable_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_timetable(timetable_id):
+    timetable = Timetable.query.get_or_404(timetable_id)
+    try:
+        db.session.delete(timetable)
+        db.session.commit()
+        flash('時刻表を削除しました。', 'success')
+    except Exception as e:
+        flash(f'エラーが発生しました: {str(e)}', 'danger')
+    return redirect(url_for('admin.timetable')) 

@@ -60,7 +60,7 @@
                         {% endif %}
                     </td>
                     <td>
-                        <a href="{{ url_for('admin.edit_timetable', id=timetable.id) }}" class="btn btn-sm btn-primary">編集</a>
+                        <a href="{{ url_for('admin.edit_timetable', timetable_id=timetable.id) }}" class="btn btn-sm btn-primary">編集</a>
                         <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ timetable.id }}">
                             削除
                         </button>
@@ -84,7 +84,7 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
-                                <form action="{{ url_for('admin.delete_timetable', id=timetable.id) }}" method="POST" class="d-inline">
+                                <form action="{{ url_for('admin.delete_timetable', timetable_id=timetable.id) }}" method="POST" class="d-inline">
                                     <button type="submit" class="btn btn-danger">削除</button>
                                 </form>
                             </div>
