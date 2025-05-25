@@ -285,13 +285,18 @@ def format_timetable(timetable, now_date, bus_type, direction, isShuttle, shuttl
     logger.info("時刻表フォーマット完了")
     return text
 
-def get_last_5_bus_times(bus_type: str, direction: int):
+def get_last_5_bus_times(bus_type: str, direction: int, specified_datetime: datetime = None):
     """
     次の5本のバス時刻を取得する関数
-    """
-    logger.info(f"バス時刻取得開始: 路線={bus_type}, 方向={direction}")
     
-    now_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
+    Args:
+        bus_type (str): バス路線名（"八王子", "南野", "蒲田"）
+        direction (int): 方向（0: 大学発, 1: 駅発）
+        specified_datetime (datetime, optional): 指定日時（デバッグ用）
+    """
+    logger.info(f"バス時刻取得開始: 路線={bus_type}, 方向={direction}, 指定日時={specified_datetime}")
+    
+    now_date = specified_datetime if specified_datetime else datetime.now(timezone(timedelta(hours=+9), 'JST'))
     isShuttle, next_bus_times, shuttle_distance = get_bus_times_from_db(bus_type, direction, now_date)
     
     formatted_text = format_timetable(next_bus_times, now_date, bus_type, direction, isShuttle, shuttle_distance)

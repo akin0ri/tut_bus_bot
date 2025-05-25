@@ -5,7 +5,7 @@ from linebot.v3.messaging import Configuration, ApiClient, MessagingApi, ReplyMe
 from linebot.v3.webhooks import MessageEvent, TextMessageContent
 import os
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import logging
 
 from app.bus_status import get_bus_status
@@ -52,8 +52,27 @@ def handle_message(event):
                 reply_text = "お問い合わせはこちらから \n https://forms.gle/Q3vcxdm2mXz2fBTK8"
             else:
                 try:
-                    bustype, direction = event.message.text.split("_")
-                    logger.info(f"時刻表確認コマンドを受信: bustype={bustype}, direction={direction}")
+                    # コマンドを分割
+                    parts = event.message.text.split("_")
+                    bustype = parts[0]
+                    
+                    # 日時指定がある場合
+                    specified_datetime = None
+                    if len(parts) >= 3:
+                        try:
+                            date_str = parts[2]
+                            time_str = parts[3] if len(parts) > 3 else "000000"
+                            datetime_str = f"{date_str}{time_str}"
+                            specified_datetime = datetime.strptime(datetime_str, "%Y%m%d%H%M%S")
+                            specified_datetime = specified_datetime.replace(tzinfo=timezone(timedelta(hours=+9), 'JST'))
+                            logger.info(f"指定日時: {specified_datetime}")
+                        except (ValueError, IndexError) as e:
+                            logger.warning(f"日時指定の解析に失敗: {str(e)}")
+                            specified_datetime = None
+                    
+                    direction = int(parts[1])
+                    logger.info(f"時刻表確認コマンドを受信: bustype={bustype}, direction={direction}, 指定日時={specified_datetime}")
+                    
                     # 路線名の英語表記を漢字に変換
                     route_map = {
                         "hachioji": "八王子",
@@ -66,7 +85,7 @@ def handle_message(event):
                         # hachioji_1: 八王子駅 -> 大学
                         # minamino_0: 大学 -> 八王子みなみ野駅
                         # minamino_1: 八王子みなみ野駅 -> 大学
-                        reply_text = get_last_5_bus_times(route_map[bustype], int(direction))
+                        reply_text = get_last_5_bus_times(route_map[bustype], direction, specified_datetime)
                     else:
                         logger.warning(f"不正な路線名: {bustype}")
                         reply_text = "コマンドが不正です。\n\n使用可能なコマンド:\n" + \
@@ -78,7 +97,9 @@ def handle_message(event):
                                    "   - minamino_0: 大学 -> 八王子みなみ野駅\n" + \
                                    "   - minamino_1: 八王子みなみ野駅 -> 大学\n" + \
                                    "   - kamata_0: 大学 -> 蒲田駅\n" + \
-                                   "   - kamata_1: 蒲田駅 -> 大学"
+                                   "   - kamata_1: 蒲田駅 -> 大学\n" + \
+                                   "   ※日時指定: _YYYYMMDD_HHMMSS を追加可能\n" + \
+                                   "   例: hachioji_0_20240524_120000"
                 except ValueError as ve:
                     logger.error(f"コマンド形式エラー: {str(ve)}")
                     reply_text = "コマンドが不正です。\n\n使用可能なコマンド:\n" + \
@@ -90,7 +111,9 @@ def handle_message(event):
                                "   - minamino_0: 大学 -> 八王子みなみ野駅\n" + \
                                "   - minamino_1: 八王子みなみ野駅 -> 大学\n" + \
                                "   - kamata_0: 大学 -> 蒲田駅\n" + \
-                               "   - kamata_1: 蒲田駅 -> 大学"
+                               "   - kamata_1: 蒲田駅 -> 大学\n" + \
+                               "   ※日時指定: _YYYYMMDD_HHMMSS を追加可能\n" + \
+                               "   例: hachioji_0_20240524_120000"
                 except Exception as e:
                     logger.error(f"予期せぬエラー: {str(e)}")
                     reply_text = "コマンドが不正です。\n\n使用可能なコマンド:\n" + \
@@ -102,7 +125,9 @@ def handle_message(event):
                                "   - minamino_0: 大学 -> 八王子みなみ野駅\n" + \
                                "   - minamino_1: 八王子みなみ野駅 -> 大学\n" + \
                                "   - kamata_0: 大学 -> 蒲田駅\n" + \
-                               "   - kamata_1: 蒲田駅 -> 大学"
+                               "   - kamata_1: 蒲田駅 -> 大学\n" + \
+                               "   ※日時指定: _YYYYMMDD_HHMMSS を追加可能\n" + \
+                               "   例: hachioji_0_20240524_120000"
             logger.info(f"返信メッセージ: {reply_text}")
             line_bot_api.reply_message_with_http_info(
                 ReplyMessageRequest(
