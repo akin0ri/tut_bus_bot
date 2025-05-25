@@ -6,6 +6,7 @@ from linebot.v3.webhooks import MessageEvent, TextMessageContent
 import os
 import pandas as pd
 from datetime import datetime
+import logging
 
 from app.bus_status import get_bus_status
 from app.bus_time import get_last_5_bus_times
@@ -14,6 +15,8 @@ from . import bp
 from app import db
 from app.models.timetable import Timetable
 
+logger = logging.getLogger(__name__)
+
 configuration = Configuration(access_token=os.environ.get("LINE_CHANNEL_ACCESS_TOKEN"))
 handler = WebhookHandler(os.environ.get("LINE_CHANNEL_SECRET"))
 
@@ -21,33 +24,36 @@ handler = WebhookHandler(os.environ.get("LINE_CHANNEL_SECRET"))
 def line_webhook():
     signature = request.headers.get('X-Line-Signature')
     if not signature:
-        current_app.logger.warning("署名ヘッダがありません")
+        logger.warning("署名ヘッダがありません")
         abort(400)
     body = request.get_data(as_text=True)
-    current_app.logger.info("Request body: " + body)
+    logger.info("Request body: " + body)
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
-        current_app.logger.warning("署名検証失敗")
+        logger.warning("署名検証失敗")
         abort(403)
     except Exception as e:
-        current_app.logger.error(f"Webhook処理中に例外: {e}")
+        logger.error(f"Webhook処理中に例外: {e}")
         abort(500)
     return 'OK'
 
 @handler.add(MessageEvent, message=TextMessageContent)
 def handle_message(event):
+    logger.info(f"メッセージ受信: {event.message.text}")
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
         try:
             if event.message.text == "運行予定":
+                logger.info("運行予定コマンドを受信")
                 reply_text = get_bus_status(7)
             elif event.message.text == "問い合わせ":
+                logger.info("問い合わせコマンドを受信")
                 reply_text = "お問い合わせはこちらから \n https://forms.gle/Q3vcxdm2mXz2fBTK8"
             else:
                 try:
                     bustype, direction = event.message.text.split("_")
-                    current_app.logger.info(f"受信したコマンド: bustype={bustype}, direction={direction}")
+                    logger.info(f"時刻表確認コマンドを受信: bustype={bustype}, direction={direction}")
                     # 路線名の英語表記を漢字に変換
                     route_map = {
                         "hachioji": "八王子",
@@ -62,7 +68,7 @@ def handle_message(event):
                         # minamino_1: 八王子みなみ野駅 -> 大学
                         reply_text = get_last_5_bus_times(route_map[bustype], int(direction))
                     else:
-                        current_app.logger.warning(f"不正な路線名: {bustype}")
+                        logger.warning(f"不正な路線名: {bustype}")
                         reply_text = "コマンドが不正です。\n\n使用可能なコマンド:\n" + \
                                    "1. 運行予定\n" + \
                                    "2. 問い合わせ\n" + \
@@ -74,7 +80,7 @@ def handle_message(event):
                                    "   - kamata_0: 大学 -> 蒲田駅\n" + \
                                    "   - kamata_1: 蒲田駅 -> 大学"
                 except ValueError as ve:
-                    current_app.logger.error(f"コマンド形式エラー: {str(ve)}")
+                    logger.error(f"コマンド形式エラー: {str(ve)}")
                     reply_text = "コマンドが不正です。\n\n使用可能なコマンド:\n" + \
                                "1. 運行予定\n" + \
                                "2. 問い合わせ\n" + \
@@ -86,7 +92,7 @@ def handle_message(event):
                                "   - kamata_0: 大学 -> 蒲田駅\n" + \
                                "   - kamata_1: 蒲田駅 -> 大学"
                 except Exception as e:
-                    current_app.logger.error(f"予期せぬエラー: {str(e)}")
+                    logger.error(f"予期せぬエラー: {str(e)}")
                     reply_text = "コマンドが不正です。\n\n使用可能なコマンド:\n" + \
                                "1. 運行予定\n" + \
                                "2. 問い合わせ\n" + \
@@ -97,6 +103,7 @@ def handle_message(event):
                                "   - minamino_1: 八王子みなみ野駅 -> 大学\n" + \
                                "   - kamata_0: 大学 -> 蒲田駅\n" + \
                                "   - kamata_1: 蒲田駅 -> 大学"
+            logger.info(f"返信メッセージ: {reply_text}")
             line_bot_api.reply_message_with_http_info(
                 ReplyMessageRequest(
                     reply_token=event.reply_token,
@@ -104,7 +111,7 @@ def handle_message(event):
                 )
             )
         except Exception as e:
-            current_app.logger.error(f"返信処理中に例外: {e}")
+            logger.error(f"返信処理中に例外: {e}")
             line_bot_api.reply_message_with_http_info(
                 ReplyMessageRequest(
                     reply_token=event.reply_token,
@@ -114,20 +121,25 @@ def handle_message(event):
 
 @bp.route('/timetable/upload', methods=['POST'])
 def upload_timetable():
+    logger.info("時刻表アップロードリクエスト受信")
     if 'file' not in request.files:
+        logger.warning("ファイルがアップロードされていません")
         return jsonify({'error': 'ファイルがアップロードされていません'}), 400
     
     file = request.files['file']
     if file.filename == '':
+        logger.warning("ファイルが選択されていません")
         return jsonify({'error': 'ファイルが選択されていません'}), 400
     
     if not file.filename.endswith('.csv'):
+        logger.warning("CSVファイル以外がアップロードされました")
         return jsonify({'error': 'CSVファイルのみアップロード可能です'}), 400
     
     try:
         df = pd.read_csv(file)
         required_columns = ['route', 'direction', 'departure_time', 'arrival_time', 'valid_from', 'valid_to']
         if not all(col in df.columns for col in required_columns):
+            logger.warning("必要なカラムが不足しています")
             return jsonify({'error': '必要なカラムが不足しています'}), 400
         
         for _, row in df.iterrows():
@@ -142,14 +154,17 @@ def upload_timetable():
             db.session.add(timetable)
         
         db.session.commit()
+        logger.info("時刻表のアップロードが完了しました")
         return jsonify({'message': '時刻表のアップロードが完了しました'}), 200
     
     except Exception as e:
+        logger.error(f"アップロード中にエラーが発生: {str(e)}")
         db.session.rollback()
         return jsonify({'error': f'アップロード中にエラーが発生しました: {str(e)}'}), 500
 
 @bp.route('/timetable/download', methods=['GET'])
 def download_timetable():
+    logger.info("時刻表ダウンロードリクエスト受信")
     try:
         timetables = Timetable.query.all()
         data = []
@@ -168,9 +183,11 @@ def download_timetable():
         os.makedirs(os.path.dirname(csv_path), exist_ok=True)
         df.to_csv(csv_path, index=False)
         
+        logger.info("時刻表のダウンロードが完了しました")
         return jsonify({'message': '時刻表のダウンロードが完了しました', 'path': csv_path}), 200
     
     except Exception as e:
+        logger.error(f"ダウンロード中にエラーが発生: {str(e)}")
         return jsonify({'error': f'ダウンロード中にエラーが発生しました: {str(e)}'}), 500
 
 # ここにAPI用のルートを追加予定 

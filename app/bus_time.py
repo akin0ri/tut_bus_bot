@@ -1,5 +1,8 @@
 import csv
 from datetime import datetime, timedelta, timezone
+import logging
+
+logger = logging.getLogger(__name__)
 
 def get_hachioji_bus_times(isWeekdays, now_date, direction, extraordinary=0, is_saturday=False):
     next_bus_times = []
@@ -189,7 +192,64 @@ def get_dormitory_bus_times(isWeekdays, now_date, direction, extraordinary=0, is
 
     return isShuttle, next_bus_times, shuttle_distance
 
+def get_bus_times_from_db(bus_type: str, direction: int, now_date: datetime):
+    """
+    データベースから時刻表データを取得する関数
+    """
+    from app import db
+    from app.models.timetable import Timetable
+    
+    logger.info(f"時刻表データ取得開始: 路線={bus_type}, 方向={direction}, 現在時刻={now_date}")
+    
+    try:
+        # 現在の日付に有効な時刻表を取得
+        query = Timetable.query.filter(
+            Timetable.route == bus_type,
+            Timetable.direction == direction,
+            Timetable.valid_from <= now_date.date(),
+            (Timetable.valid_to >= now_date.date()) | (Timetable.valid_to == None)
+        ).order_by(Timetable.departure_time)
+        
+        timetables = query.all()
+        logger.info(f"取得した時刻表データ数: {len(timetables)}")
+        
+        next_bus_times = []
+        isShuttle = False
+        shuttle_distance = None
+        
+        for timetable in timetables:
+            departure_time = datetime.combine(now_date.date(), timetable.departure_time)
+            departure_time = departure_time.replace(tzinfo=timezone(timedelta(hours=+9), 'JST'))
+            
+            if departure_time > now_date:
+                if timetable.is_shuttle:
+                    isShuttle = True
+                    shuttle_distance = [
+                        timetable.shuttle_start.strftime('%H:%M') if timetable.shuttle_start else None,
+                        timetable.shuttle_end.strftime('%H:%M') if timetable.shuttle_end else None
+                    ]
+                else:
+                    next_bus_times.append([
+                        timetable.departure_time.strftime('%H:%M'),
+                        timetable.arrival_time.strftime('%H:%M') if timetable.arrival_time else None
+                    ])
+                
+                if len(next_bus_times) >= 5:
+                    break
+        
+        logger.info(f"次のバス時刻数: {len(next_bus_times)}, シャトル運行: {isShuttle}")
+        return isShuttle, next_bus_times, shuttle_distance
+        
+    except Exception as e:
+        logger.error(f"時刻表データ取得中にエラーが発生: {str(e)}")
+        return False, [["error", None]], None
+
 def format_timetable(timetable, now_date, bus_type, direction, isShuttle, shuttle_distance):
+    """
+    時刻表データを整形して表示用のテキストを生成する関数
+    """
+    logger.info(f"時刻表フォーマット開始: 路線={bus_type}, 方向={direction}")
+    
     text = f"【バス運行情報 {now_date.strftime('%H:%M:%S')}現在】\n"
 
     if bus_type == "八王子":
@@ -209,7 +269,7 @@ def format_timetable(timetable, now_date, bus_type, direction, isShuttle, shuttl
             text += "蒲田駅発 大学行\n"
     text += "\n"
 
-    if isShuttle:
+    if isShuttle and shuttle_distance and all(shuttle_distance):
         text += f"{shuttle_distance[0]} ~ {shuttle_distance[1]}の間はシャトル運行しています．\n\n"
         text += "↓シャトル運行外の時刻表はこちら↓\n"
 
@@ -219,58 +279,24 @@ def format_timetable(timetable, now_date, bus_type, direction, isShuttle, shuttl
         text += "エラーが発生しました。時間をおいて再度お試しください。"
     else:
         for i, time in enumerate(timetable, 1):
-            text += f"{time[0]} --> {time[1]}\n"
+            text += f"{time[0]} --> {time[1] if time[1] else '終点'}\n"
 
     text += "\n※時刻は目安です。遅れる場合があります。"
-
+    logger.info("時刻表フォーマット完了")
     return text
 
-# bus_type: "八王子" or "南野" or "蒲田"
-# direction: 0 or 1
 def get_last_5_bus_times(bus_type: str, direction: int):
-    from app import db
-    from app.models.timetable import Timetable
+    """
+    次の5本のバス時刻を取得する関数
+    """
+    logger.info(f"バス時刻取得開始: 路線={bus_type}, 方向={direction}")
     
     now_date = datetime.now(timezone(timedelta(hours=+9), 'JST'))
-    isWeekdays = now_date.weekday() < 5
-    isSaturday = now_date.weekday() == 5
-
-    # 現在の日付に有効な時刻表を取得
-    query = Timetable.query.filter(
-        Timetable.route == bus_type,
-        Timetable.direction == direction,
-        Timetable.valid_from <= now_date.date(),
-        (Timetable.valid_to >= now_date.date()) | (Timetable.valid_to == None)
-    ).order_by(Timetable.departure_time)
-
-    # 現在時刻以降のバスを取得
-    next_bus_times = []
-    isShuttle = False
-    shuttle_distance = None
-
-    for timetable in query:
-        departure_time = datetime.combine(now_date.date(), timetable.departure_time)
-        if departure_time > now_date:
-            if timetable.is_shuttle:
-                isShuttle = True
-                shuttle_distance = [
-                    timetable.shuttle_start.strftime('%H:%M'),
-                    timetable.shuttle_end.strftime('%H:%M')
-                ]
-            else:
-                next_bus_times.append([
-                    timetable.departure_time.strftime('%H:%M'),
-                    timetable.arrival_time.strftime('%H:%M') if timetable.arrival_time else ''
-                ])
-            if len(next_bus_times) >= 5:
-                break
-
-    if len(next_bus_times) == 0:
-        return "本日の運行は終了しました。"
-    if now_date.weekday() == 6:
-        return "本日は運行していません。"
+    isShuttle, next_bus_times, shuttle_distance = get_bus_times_from_db(bus_type, direction, now_date)
     
-    return format_timetable(next_bus_times, now_date, bus_type, direction, isShuttle, shuttle_distance)
+    formatted_text = format_timetable(next_bus_times, now_date, bus_type, direction, isShuttle, shuttle_distance)
+    logger.info("バス時刻取得完了")
+    return formatted_text
 
 # For debugging purposes
 if __name__ == "__main__":
