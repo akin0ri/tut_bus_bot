@@ -60,14 +60,14 @@ def edit_timetable(timetable_id):
         return redirect(url_for('admin.timetable'))
     return render_template('admin/edit_timetable.html', timetable=timetable)
 
-@bp.route('/timetable/<int:timetable_id>/delete', methods=['POST'])
+@bp.route('/timetable/delete_all', methods=['POST'])
 @login_required
 @admin_required
-def delete_timetable(timetable_id):
-    timetable = Timetable.query.get_or_404(timetable_id)
-    db.session.delete(timetable)
+def delete_all_timetables():
+    from app.models import Timetable, db
+    Timetable.query.delete()
     db.session.commit()
-    flash('時刻表を削除しました。', 'success')
+    flash('すべての時刻表を削除しました。', 'success')
     return redirect(url_for('admin.timetable'))
 
 @bp.route('/timetable/upload', methods=['GET', 'POST'])
