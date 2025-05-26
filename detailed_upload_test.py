@@ -1,156 +1,37 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file
-from flask_login import login_required, current_user
-from app.models.timetable import Timetable
-from app import db
-from datetime import datetime
+#!/usr/bin/env python3
 import csv
 import io
+from datetime import datetime, date
 import logging
 
+# Flaskアプリケーションのインポート
+from app import create_app, db
+from app.models.timetable import Timetable
+
+# ログ設定
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-admin = Blueprint('admin', __name__)
-
-@admin.route('/timetable')
-@login_required
-def timetable():
-    timetable_type = request.args.get('timetable_type', type=int)
-    query = Timetable.query
+def detailed_upload_test():
+    """管理画面のアップロード処理ロジックを詳細にテスト"""
+    app = create_app()
     
-    if timetable_type:
-        query = query.filter_by(timetable_type=timetable_type)
-    
-    timetables = query.order_by(Timetable.route, Timetable.direction, Timetable.departure_time).all()
-    return render_template('admin/timetable.html', timetables=timetables, timetable_type=timetable_type)
-
-@admin.route('/timetable/add', methods=['GET', 'POST'])
-@login_required
-def add_timetable():
-    if request.method == 'POST':
-        try:
-            timetable = Timetable(
-                route=request.form['route'],
-                direction=int(request.form['direction']),
-                timetable_type=int(request.form['timetable_type']),
-                departure_time=datetime.strptime(request.form['departure_time'], '%H:%M').time(),
-                arrival_time=datetime.strptime(request.form['arrival_time'], '%H:%M').time() if request.form['arrival_time'] else None,
-                is_shuttle=bool(request.form.get('is_shuttle')),
-                shuttle_start=datetime.strptime(request.form['shuttle_start'], '%H:%M').time() if request.form.get('is_shuttle') and request.form['shuttle_start'] else None,
-                shuttle_end=datetime.strptime(request.form['shuttle_end'], '%H:%M').time() if request.form.get('is_shuttle') and request.form['shuttle_end'] else None,
-                valid_from=datetime.strptime(request.form['valid_from'], '%Y-%m-%d').date(),
-                valid_to=datetime.strptime(request.form['valid_to'], '%Y-%m-%d').date() if request.form['valid_to'] else None
-            )
-            db.session.add(timetable)
-            db.session.commit()
-            flash('時刻表を追加しました', 'success')
-            return redirect(url_for('admin.timetable'))
-        except Exception as e:
-            flash(f'エラーが発生しました: {str(e)}', 'error')
-            return render_template('admin/add_timetable.html')
-    
-    return render_template('admin/add_timetable.html')
-
-@admin.route('/timetable/<int:id>/edit', methods=['GET', 'POST'])
-@login_required
-def edit_timetable(id):
-    timetable = Timetable.query.get_or_404(id)
-    
-    if request.method == 'POST':
-        try:
-            timetable.route = request.form['route']
-            timetable.direction = int(request.form['direction'])
-            timetable.timetable_type = int(request.form['timetable_type'])
-            timetable.departure_time = datetime.strptime(request.form['departure_time'], '%H:%M').time()
-            timetable.arrival_time = datetime.strptime(request.form['arrival_time'], '%H:%M').time() if request.form['arrival_time'] else None
-            timetable.is_shuttle = bool(request.form.get('is_shuttle'))
-            timetable.shuttle_start = datetime.strptime(request.form['shuttle_start'], '%H:%M').time() if request.form.get('is_shuttle') and request.form['shuttle_start'] else None
-            timetable.shuttle_end = datetime.strptime(request.form['shuttle_end'], '%H:%M').time() if request.form.get('is_shuttle') and request.form['shuttle_end'] else None
-            timetable.valid_from = datetime.strptime(request.form['valid_from'], '%Y-%m-%d').date()
-            timetable.valid_to = datetime.strptime(request.form['valid_to'], '%Y-%m-%d').date() if request.form['valid_to'] else None
-            
-            db.session.commit()
-            flash('時刻表を更新しました', 'success')
-            return redirect(url_for('admin.timetable'))
-        except Exception as e:
-            flash(f'エラーが発生しました: {str(e)}', 'error')
-    
-    return render_template('admin/edit_timetable.html', timetable=timetable)
-
-@admin.route('/timetable/<int:id>/delete', methods=['POST'])
-@login_required
-def delete_timetable(id):
-    timetable = Timetable.query.get_or_404(id)
-    try:
-        db.session.delete(timetable)
+    with app.app_context():
+        logger.info("詳細アップロードテスト開始")
+        
+        # 既存のhachioji路線データを削除
+        Timetable.query.filter_by(route='hachioji').delete()
         db.session.commit()
-        flash('時刻表を削除しました', 'success')
-    except Exception as e:
-        flash(f'エラーが発生しました: {str(e)}', 'error')
-    return redirect(url_for('admin.timetable'))
-
-@admin.route('/timetable/delete_all', methods=['POST'])
-@login_required
-def delete_all_timetables():
-    try:
-        Timetable.query.delete()
-        db.session.commit()
-        flash('すべての時刻表を削除しました', 'success')
-    except Exception as e:
-        flash(f'エラーが発生しました: {str(e)}', 'error')
-    return redirect(url_for('admin.timetable'))
-
-@admin.route('/timetable/download')
-@login_required
-def download():
-    timetables = Timetable.query.order_by(Timetable.route, Timetable.direction, Timetable.departure_time).all()
-    
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerow(['路線', '方向', '種類', '出発時刻', '到着時刻', 'シャトル運行', 'シャトル開始', 'シャトル終了', '適用開始日', '適用終了日'])
-    
-    for t in timetables:
-        writer.writerow([
-            t.route_japanese,
-            '大学発' if t.direction == 0 else '駅発',
-            t.timetable_type_name,
-            t.departure_time.strftime('%H:%M'),
-            t.arrival_time.strftime('%H:%M') if t.arrival_time else '',
-            'はい' if t.is_shuttle else 'いいえ',
-            t.shuttle_start.strftime('%H:%M') if t.shuttle_start else '',
-            t.shuttle_end.strftime('%H:%M') if t.shuttle_end else '',
-            t.valid_from.strftime('%Y-%m-%d'),
-            t.valid_to.strftime('%Y-%m-%d') if t.valid_to else ''
-        ])
-    
-    output.seek(0)
-    return send_file(
-        io.BytesIO(output.getvalue().encode('utf-8-sig')),
-        mimetype='text/csv',
-        as_attachment=True,
-        download_name=f'timetable_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
-    )
-
-@admin.route('/timetable/upload', methods=['GET', 'POST'])
-@login_required
-def upload():
-    if request.method == 'POST':
-        if 'file' not in request.files:
-            flash('ファイルが選択されていません', 'error')
-            return redirect(request.url)
+        logger.info("既存のhachioji路線データを削除")
         
-        file = request.files['file']
-        if file.filename == '':
-            flash('ファイルが選択されていません', 'error')
-            return redirect(request.url)
-        
-        if not file.filename.endswith('.csv'):
-            flash('CSVファイルを選択してください', 'error')
-            return redirect(request.url)
-        
+        # CSVファイルを読み込み（管理画面と同じ処理）
         try:
             logger.info("CSVアップロード開始")
+            
             # ファイル内容を読み取り、エンコーディングを確認
-            file_content = file.stream.read()
+            with open('shuttle_test.csv', 'rb') as f:
+                file_content = f.read()
+            
             logger.info(f"ファイルサイズ: {len(file_content)} bytes")
             logger.info(f"ファイル内容の最初の100文字: {repr(file_content[:100])}")
             
@@ -225,7 +106,6 @@ def upload():
                     logger.info(f"有効期間: from={valid_from_str}, to={valid_to_str}")
                     
                     # valid_fromが空欄の場合は今日の日付を設定
-                    from datetime import date
                     valid_from_date = datetime.strptime(valid_from_str, '%Y-%m-%d').date() if valid_from_str else date.today()
                     logger.info(f"valid_from_date: {valid_from_date}")
                     
@@ -259,6 +139,8 @@ def upload():
                     error_count += 1
                     logger.error(f"行 {row_num} でエラー: {str(row_error)}")
                     logger.error(f"問題のある行データ: {row}")
+                    import traceback
+                    logger.error(traceback.format_exc())
                     continue
             
             db.session.commit()
@@ -270,12 +152,11 @@ def upload():
             for t in timetables:
                 logger.info(f"  DB内容: ID={t.id}, route={t.route}, departure={t.departure_time}, is_shuttle={t.is_shuttle}, shuttle_start={t.shuttle_start}, shuttle_end={t.shuttle_end}")
             
-            flash(f'時刻表をアップロードしました (成功: {success_count}件, エラー: {error_count}件)', 'success')
-            return redirect(url_for('admin.timetable'))
         except Exception as e:
             logger.error(f"アップロード処理全体でエラー: {str(e)}")
+            import traceback
+            logger.error(traceback.format_exc())
             db.session.rollback()
-            flash(f'エラーが発生しました: {str(e)}', 'error')
-            return redirect(request.url)
-    
-    return render_template('admin/upload.html') 
+
+if __name__ == "__main__":
+    detailed_upload_test() 

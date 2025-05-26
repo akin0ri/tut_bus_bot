@@ -168,11 +168,27 @@ def upload_timetable():
             return jsonify({'error': '必要なカラムが不足しています'}), 400
         
         for _, row in df.iterrows():
+            # is_shuttle関連の処理を追加
+            is_shuttle = bool(int(row.get('is_shuttle', 0))) if pd.notna(row.get('is_shuttle')) else False
+            shuttle_start = None
+            shuttle_end = None
+            timetable_type = int(row.get('timetable_type', 1)) if pd.notna(row.get('timetable_type')) else 1
+            
+            if is_shuttle:
+                if pd.notna(row.get('shuttle_start')) and row['shuttle_start']:
+                    shuttle_start = datetime.strptime(row['shuttle_start'], '%H:%M:%S').time()
+                if pd.notna(row.get('shuttle_end')) and row['shuttle_end']:
+                    shuttle_end = datetime.strptime(row['shuttle_end'], '%H:%M:%S').time()
+            
             timetable = Timetable(
                 route=row['route'],
                 direction=row['direction'],
+                timetable_type=timetable_type,
                 departure_time=datetime.strptime(row['departure_time'], '%H:%M:%S').time(),
                 arrival_time=datetime.strptime(row['arrival_time'], '%H:%M:%S').time() if pd.notna(row['arrival_time']) else None,
+                is_shuttle=is_shuttle,
+                shuttle_start=shuttle_start,
+                shuttle_end=shuttle_end,
                 valid_from=datetime.strptime(row['valid_from'], '%Y-%m-%d').date(),
                 valid_to=datetime.strptime(row['valid_to'], '%Y-%m-%d').date() if pd.notna(row['valid_to']) else None
             )

@@ -64,7 +64,6 @@ def edit_timetable(timetable_id):
 @login_required
 @admin_required
 def delete_all_timetables():
-    from app.models import Timetable, db
     Timetable.query.delete()
     db.session.commit()
     flash('すべての時刻表を削除しました。', 'success')
@@ -96,6 +95,10 @@ def upload():
                 return redirect(request.url)
             
             has_timetable_type = 'timetable_type' in df.columns
+            has_is_shuttle = 'is_shuttle' in df.columns
+            has_shuttle_start = 'shuttle_start' in df.columns
+            has_shuttle_end = 'shuttle_end' in df.columns
+            
             for _, row in df.iterrows():
                 route = str(row['route']) if not pd.isna(row['route']) else ''
                 direction = int(row['direction']) if not pd.isna(row['direction']) else 0
@@ -103,10 +106,29 @@ def upload():
                 arrival_time_str = str(row['arrival_time']) if not pd.isna(row['arrival_time']) else ''
                 valid_from_str = str(row['valid_from']) if not pd.isna(row['valid_from']) and str(row['valid_from']) != '' and str(row['valid_from']) != 'nan' else None
                 valid_to_str = str(row['valid_to']) if not pd.isna(row['valid_to']) and str(row['valid_to']) != '' and str(row['valid_to']) != 'nan' else None
+                
                 if has_timetable_type and not pd.isna(row['timetable_type']) and str(row['timetable_type']) != '' and str(row['timetable_type']) != 'nan':
                     timetable_type = int(row['timetable_type'])
                 else:
                     timetable_type = 1  # デフォルト値
+
+                # is_shuttle処理を追加
+                is_shuttle = False
+                shuttle_start = None
+                shuttle_end = None
+                
+                if has_is_shuttle and not pd.isna(row['is_shuttle']):
+                    is_shuttle_value = str(row['is_shuttle']).strip()
+                    is_shuttle = is_shuttle_value == '1'
+                    
+                    if is_shuttle:
+                        if has_shuttle_start and not pd.isna(row['shuttle_start']) and str(row['shuttle_start']) != 'nan':
+                            shuttle_start_str = str(row['shuttle_start'])
+                            shuttle_start = datetime.strptime(shuttle_start_str, '%H:%M:%S').time()
+                        
+                        if has_shuttle_end and not pd.isna(row['shuttle_end']) and str(row['shuttle_end']) != 'nan':
+                            shuttle_end_str = str(row['shuttle_end'])
+                            shuttle_end = datetime.strptime(shuttle_end_str, '%H:%M:%S').time()
 
                 # valid_fromが空欄・nanなら今日の日付をセット
                 if not valid_from_str:
@@ -122,6 +144,9 @@ def upload():
                     timetable_type=timetable_type,
                     departure_time=datetime.strptime(departure_time_str, '%H:%M:%S').time() if departure_time_str and departure_time_str != 'nan' else None,
                     arrival_time=datetime.strptime(arrival_time_str, '%H:%M:%S').time() if arrival_time_str and arrival_time_str != 'nan' else None,
+                    is_shuttle=is_shuttle,
+                    shuttle_start=shuttle_start,
+                    shuttle_end=shuttle_end,
                     valid_from=valid_from_date,
                     valid_to=valid_to_date
                 )

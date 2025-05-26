@@ -1,0 +1,4 @@
+route,direction,departure_time,arrival_time,is_shuttle,shuttle_start,shuttle_end,valid_from,valid_to,remarks,timetable_type
+hachioji,0,07:38:00,09:15:00,1,07:43:00,09:15:00,2024-04-01,,約3～5分間隔,1
+hachioji,0,14:48:00,15:41:00,1,15:00:00,15:41:00,2024-04-01,,約5～10分間隔,1
+hachioji,0,16:10:00,17:41:00,1,16:20:00,17:41:00,2024-04-01,,約3～10分間隔,1 
