@@ -15,6 +15,17 @@ from . import bp
 from app import db
 from app.models.timetable import Timetable
 
+# Route name mapping from Japanese to romanized
+ROUTE_NAME_MAPPING = {
+    "八王子みなみ野駅": "minamino",
+    "八王子駅南口": "hachioji", 
+    "学生会館": "dormitory"
+}
+
+def convert_route_name(japanese_name):
+    """Convert Japanese route name to romanized version"""
+    return ROUTE_NAME_MAPPING.get(japanese_name, japanese_name)
+
 logger = logging.getLogger(__name__)
 
 configuration = Configuration(access_token=os.environ.get("LINE_CHANNEL_ACCESS_TOKEN"))
@@ -181,7 +192,7 @@ def upload_timetable():
                     shuttle_end = datetime.strptime(row['shuttle_end'], '%H:%M:%S').time()
             
             timetable = Timetable(
-                route=row['route'],
+                route=convert_route_name(row['route']),
                 direction=row['direction'],
                 timetable_type=timetable_type,
                 departure_time=datetime.strptime(row['departure_time'], '%H:%M:%S').time(),

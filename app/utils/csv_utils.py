@@ -4,6 +4,17 @@ from app import db
 from app.models.timetable import Timetable
 from datetime import datetime
 
+# Route name mapping from Japanese to romanized
+ROUTE_NAME_MAPPING = {
+    "八王子みなみ野駅": "minamino",
+    "八王子駅南口": "hachioji", 
+    "学生会館": "dormitory"
+}
+
+def convert_route_name(japanese_name):
+    """Convert Japanese route name to romanized version"""
+    return ROUTE_NAME_MAPPING.get(japanese_name, japanese_name)
+
 def import_timetable_csv(file) -> None:
     stream = io.StringIO(file.stream.read().decode('utf-8'))
     reader = csv.DictReader(stream)
@@ -26,7 +37,7 @@ def import_timetable_csv(file) -> None:
             if row.get('valid_to') and row['valid_to'].strip() else None
         )
         timetable = Timetable(
-            route=row['route'],
+            route=convert_route_name(row['route']),
             direction=int(row['direction']),
             departure_time=departure_time,
             arrival_time=arrival_time,

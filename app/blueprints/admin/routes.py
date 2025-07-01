@@ -8,6 +8,17 @@ import pandas as pd
 from datetime import datetime, date
 import os
 
+# Route name mapping from Japanese to romanized
+ROUTE_NAME_MAPPING = {
+    "八王子みなみ野駅": "minamino",
+    "八王子駅南口": "hachioji", 
+    "学生会館": "dormitory"
+}
+
+def convert_route_name(japanese_name):
+    """Convert Japanese route name to romanized version"""
+    return ROUTE_NAME_MAPPING.get(japanese_name, japanese_name)
+
 def admin_required(f):
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated or not current_user.is_admin:
@@ -100,7 +111,8 @@ def upload():
             has_shuttle_end = 'shuttle_end' in df.columns
             
             for _, row in df.iterrows():
-                route = str(row['route']) if not pd.isna(row['route']) else ''
+                route_raw = str(row['route']) if not pd.isna(row['route']) else ''
+                route = convert_route_name(route_raw)
                 direction = int(row['direction']) if not pd.isna(row['direction']) else 0
                 departure_time_str = str(row['departure_time']) if not pd.isna(row['departure_time']) else ''
                 arrival_time_str = str(row['arrival_time']) if not pd.isna(row['arrival_time']) else ''
